@@ -1,0 +1,150 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "skymantle_mock_data_forge"
+description = "A library for deploying mock data to aws resources when running integration and end-to-end tests."
+authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.11"
+dependencies=[
+  "skymantle_boto_buddy[boto] @ git+https://github.com/skymantle-tech/skymantle-boto-buddy@main"
+]
+
+[project.urls]
+Home = "https://github.com/skymantle-tech/skymantle-mock-data-forge"
+Issues = "https://github.com/skymantle-tech/skymantle-mock-data-forge/issues"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.version]
+path = "src/skymantle_mock_data_forge/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "mypy",
+  "pytest",
+  "pytest-cov",
+  "pytest-mock",
+  "bandit",
+  "black",
+  "ruff",
+  "moto[s3,dynamodb,ssm,cloudformation]"
+]
+path = ".venv"
+
+[tool.hatch.envs.default.scripts]
+_bandit = "bandit -c pyproject.toml -r {args:.}"
+_ruff = "ruff {args:.}"
+_black = "black --check --diff {args:.}"
+_mypy = "mypy --install-types --non-interactive {args:.}"
+cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
+
+
+[tool.mypy]
+exclude = [
+    "dist",
+    ".venv"
+]
+
+[tool.black]
+line-length = 120
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | venv
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.bandit]
+skips = ['B324']
+exclude_dirs = [".venv", "tests", "dist"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+select = [
+  "A",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "SIM",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  # Ignore checks for use `datetime.UTC` alias
+  "UP017",
+  # Ignore checks for f-string literal in exception message
+  "EM102",
+  # Ignore too many arguments in function definition
+  "PLR0913"
+]
+unfixable = []
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "double"
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "I001"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["src"]
+omit = [
+    ".venv/*",
+    "tests/*",
+    "src/skymantle_mock_data_forge/__about__.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+markers = []
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.vscode",
+  "/.github",
+  ".gitignore",
+  "Makefile"
+]
