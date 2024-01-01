@@ -35,14 +35,29 @@ def test_forge_init_invalid_forge_type(mock_dynamodb_forge):
     data_forge_config = [
         {
             "forge_id": "some_config",
-            "s3": {},
+            "invalid": {},
         }
     ]
 
     with pytest.raises(Exception) as e:
         ForgeFactory(data_forge_config)
 
-    assert str(e.value) == "Can only have one of the following per config: ['dynamodb']"
+    assert "Can only have one of the following per config:" in str(e.value)
+
+
+def test_forge_init_to_many_forge_type(mock_dynamodb_forge):
+    data_forge_config = [
+        {
+            "forge_id": "some_config",
+            "s3": {},
+            "dynamodb": {},
+        }
+    ]
+
+    with pytest.raises(Exception) as e:
+        ForgeFactory(data_forge_config)
+
+    assert "Can only have one of the following per config:" in str(e.value)
 
 
 def test_load_data(mock_dynamodb_forge):
