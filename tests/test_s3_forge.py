@@ -13,7 +13,7 @@ from skymantle_mock_data_forge.s3_forge import S3Forge
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "us-east-1"},
+        {"AWS_DEFAULT_REGION": "us-east-1", "BOTO_BUDDY_DISABLE_CACHE": "true"},
     )
 
 

@@ -42,4 +42,4 @@ class S3Forge:
             s3.put_object(self.bucket_name, s3_object["key"], s3_object["data"]["text"], session=self.aws_session)
 
     def cleanup_data(self) -> None:
-        s3.delete_objects(self.bucket_name, self.keys, session=self.aws_session)
+        s3.delete_objects_simplified(self.bucket_name, self.keys, session=self.aws_session)
