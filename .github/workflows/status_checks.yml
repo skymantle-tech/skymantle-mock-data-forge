@@ -1,0 +1,27 @@
+name: Status Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+
+  status_check:
+    runs-on: ubuntu-latest
+    name: status_check
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Setup
+        run: make setup
+      - name: Lint and Analysis
+        run: make lintAndAnalysis
+      - name: Unit Tests
+        run: make unitTests
