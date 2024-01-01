@@ -20,6 +20,9 @@ class DynamoDbForgeConfig(TypedDict):
 
 class S3ObjectDataConfig(TypedDict):
     text: str
+    json: dict | list[dict]
+    base64: str
+    csv: list[list[str | int]]
 
 
 class S3ObjectConfig(TypedDict):

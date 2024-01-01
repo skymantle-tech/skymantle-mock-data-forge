@@ -94,7 +94,7 @@ def test_load_data_by_cfn_invalid_output():
 
 
 @mock_s3
-def test_load_and_cleanup_data():
+def test_load_text_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
 
@@ -115,6 +115,134 @@ def test_load_and_cleanup_data():
         s3_client.get_object(Bucket="some_bucket", Key="some_key")
 
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
+def test_load_json_and_cleanup_data():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_object": [{"key": "some_key", "data": {"json": {"some_key": "some_value"}}}],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    manager.load_data()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == b'{"some_key": "some_value"}'
+
+    manager.cleanup_data()
+
+    with pytest.raises(Exception) as e:
+        s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
+def test_load_base64_and_cleanup_data():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_object": [{"key": "some_key", "data": {"base64": "SGVsbG8gV29ybGQh"}}],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    manager.load_data()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == b"Hello World!"
+
+    manager.cleanup_data()
+
+    with pytest.raises(Exception) as e:
+        s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
+def test_load_csv_and_cleanup_data():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_object": [
+            {
+                "key": "some_key",
+                "data": {
+                    "csv": [
+                        ["a", "b"],
+                        ["c", "d"],
+                        ["e", "f"],
+                        [1, 2],
+                    ]
+                },
+            }
+        ],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    manager.load_data()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == b"a,b\r\nc,d\r\ne,f\r\n1,2\r\n"
+
+    manager.cleanup_data()
+
+    with pytest.raises(Exception) as e:
+        s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
+def test_load_data_invalid_type():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_object": [{"key": "some_key", "data": {"invalid": ""}}],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.load_data()
+
+    assert "Can only have one of the following per s3 config:" in str(e.value)
+
+
+@mock_s3
+def test_load_data_to_many_types():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_object": [
+            {
+                "key": "some_key",
+                "data": {
+                    "text": "Some Data",
+                    "json": {"some_key": "some_value"},
+                },
+            }
+        ],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.load_data()
+
+    assert "Can only have one of the following per s3 config:" in str(e.value)
 
 
 @mock_s3

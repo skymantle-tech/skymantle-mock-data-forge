@@ -1,4 +1,8 @@
+import base64
 import copy
+import csv
+import io
+import json
 
 from boto3 import Session
 from skymantle_boto_buddy import cloudformation, s3, ssm
@@ -38,8 +42,25 @@ class S3Forge:
         self.keys.append(key)
 
     def load_data(self) -> None:
+        def create_csv(data: list[list[str | int]]):
+            with io.StringIO() as string_io:
+                csv.writer(string_io).writerows(data)
+                return string_io.getvalue()
+
         for s3_object in self.s3_objects:
-            s3.put_object(self.bucket_name, s3_object["key"], s3_object["data"]["text"], session=self.aws_session)
+            types = {
+                "text": (lambda: s3_object["data"]["text"]),
+                "json": (lambda: json.dumps(s3_object["data"]["json"])),
+                "base64": (lambda: base64.b64decode(s3_object["data"]["base64"])),
+                "csv": (lambda: create_csv(s3_object["data"]["csv"])),
+            }
+
+            data_types = list(set(types.keys()).intersection(set(s3_object["data"].keys())))
+
+            if len(data_types) != 1:
+                raise Exception(f"Can only have one of the following per s3 config: {list(types.keys())}")
+
+            s3.put_object(self.bucket_name, s3_object["key"], types[data_types[0]](), session=self.aws_session)
 
     def cleanup_data(self) -> None:
         s3.delete_objects_simplified(self.bucket_name, self.keys, session=self.aws_session)
