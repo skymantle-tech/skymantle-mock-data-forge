@@ -2,11 +2,12 @@ from boto3 import Session
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
 from skymantle_mock_data_forge.models import DataForgeConfig
+from skymantle_mock_data_forge.s3_forge import S3Forge
 
 
 class ForgeFactory:
     def __init__(self, config: list[DataForgeConfig], session: Session = None) -> None:
-        forges = {"dynamodb": DynamoDbForge}
+        forges = {"dynamodb": DynamoDbForge, "s3": S3Forge}
 
         self.data_managers: dict[str, DynamoDbForge] = {}
 
