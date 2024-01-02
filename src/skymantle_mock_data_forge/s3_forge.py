@@ -32,8 +32,8 @@ class S3Forge:
             else:
                 raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
 
-        self.s3_objects: list[S3ObjectConfig] = [copy.deepcopy(s3_object) for s3_object in s3_config["s3_object"]]
-        self.keys: list[str] = [s3_object["key"] for s3_object in s3_config["s3_object"]]
+        self.s3_objects: list[S3ObjectConfig] = [copy.deepcopy(s3_object) for s3_object in s3_config["s3_objects"]]
+        self.keys: list[str] = [s3_object["key"] for s3_object in s3_config["s3_objects"]]
 
     def get_data(self):
         return [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
@@ -47,20 +47,24 @@ class S3Forge:
                 csv.writer(string_io).writerows(data)
                 return string_io.getvalue()
 
-        for s3_object in self.s3_objects:
-            types = {
-                "text": (lambda: s3_object["data"]["text"]),
-                "json": (lambda: json.dumps(s3_object["data"]["json"])),
-                "base64": (lambda: base64.b64decode(s3_object["data"]["base64"])),
-                "csv": (lambda: create_csv(s3_object["data"]["csv"])),
-            }
+        data_type_map = {
+            "text": (lambda data: data),
+            "json": (lambda data: json.dumps(data)),
+            "base64": (lambda data: base64.b64decode(data)),
+            "csv": create_csv,
+        }
 
-            data_types = list(set(types.keys()).intersection(set(s3_object["data"].keys())))
+        for s3_object in self.s3_objects:
+            data_types = list(set(data_type_map.keys()).intersection(set(s3_object["data"].keys())))
 
             if len(data_types) != 1:
-                raise Exception(f"Can only have one of the following per s3 config: {list(types.keys())}")
+                raise Exception(f"Can only have one of the following per s3 config: {list(data_type_map.keys())}")
 
-            s3.put_object(self.bucket_name, s3_object["key"], types[data_types[0]](), session=self.aws_session)
+            data_type = data_types[0]
+            data_func = data_type_map[data_type]
+            data = data_func(s3_object["data"][data_type])
+
+            s3.put_object(self.bucket_name, s3_object["key"], data, session=self.aws_session)
 
     def cleanup_data(self) -> None:
         s3.delete_objects_simplified(self.bucket_name, self.keys, session=self.aws_session)

@@ -32,7 +32,7 @@ class S3ObjectConfig(TypedDict):
 
 class S3ForgeConfig(TypedDict):
     bucket: ResourceConfig
-    s3_object: list[S3ObjectConfig]
+    s3_objects: list[S3ObjectConfig]
 
 
 class DataForgeConfig(TypedDict):

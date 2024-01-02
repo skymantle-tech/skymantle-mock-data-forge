@@ -28,7 +28,7 @@ def test_load_data_by_ssm():
 
     s3_config = {
         "bucket": {"ssm": "some_ssm_key"},
-        "s3_object": [{"key": "some_key", "data": {"text": "Some Data"}}],
+        "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -56,7 +56,7 @@ def test_load_data_by_cfn():
 
     s3_config = {
         "bucket": {"stack": {"name": "some_stack", "output": "bucket_name"}},
-        "s3_object": [{"key": "some_key", "data": {"text": "Some Data"}}],
+        "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -84,7 +84,7 @@ def test_load_data_by_cfn_invalid_output():
 
     s3_config = {
         "bucket": {"stack": {"name": "some_stack", "output": "bucket_name"}},
-        "s3_object": [{"key": "some_key", "data": {"text": "Some Data"}}],
+        "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
     with pytest.raises(Exception) as e:
@@ -100,7 +100,7 @@ def test_load_text_and_cleanup_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [{"key": "some_key", "data": {"text": "Some Data"}}],
+        "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -124,7 +124,7 @@ def test_load_json_and_cleanup_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [{"key": "some_key", "data": {"json": {"some_key": "some_value"}}}],
+        "s3_objects": [{"key": "some_key", "data": {"json": {"some_key": "some_value"}}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -148,7 +148,7 @@ def test_load_base64_and_cleanup_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [{"key": "some_key", "data": {"base64": "SGVsbG8gV29ybGQh"}}],
+        "s3_objects": [{"key": "some_key", "data": {"base64": "SGVsbG8gV29ybGQh"}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -172,7 +172,7 @@ def test_load_csv_and_cleanup_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [
+        "s3_objects": [
             {
                 "key": "some_key",
                 "data": {
@@ -208,7 +208,7 @@ def test_load_data_invalid_type():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [{"key": "some_key", "data": {"invalid": ""}}],
+        "s3_objects": [{"key": "some_key", "data": {"invalid": ""}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -226,7 +226,7 @@ def test_load_data_to_many_types():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [
+        "s3_objects": [
             {
                 "key": "some_key",
                 "data": {
@@ -252,7 +252,7 @@ def test_get_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [{"key": "some_key", "data": {"text": "Some Data"}}],
+        "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
     manager = S3Forge("some-config", s3_config)
@@ -268,7 +268,7 @@ def test_add_key_and_cleanup_data():
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_object": [],
+        "s3_objects": [],
     }
 
     manager = S3Forge("some-config", s3_config)
