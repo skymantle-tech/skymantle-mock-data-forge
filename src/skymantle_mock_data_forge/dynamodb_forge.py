@@ -15,12 +15,12 @@ class DynamoDbForge:
         if dynamodb_config["table"].get("name"):
             self.table_name: str = dynamodb_config["table"]["name"]
         elif dynamodb_config["table"].get("ssm"):
-            self.table_name: str = ssm.get_parameter(dynamodb_config["table"]["ssm"])
+            self.table_name: str = ssm.get_parameter(dynamodb_config["table"]["ssm"], session=self.aws_session)
         else:
             stack_name = dynamodb_config["table"]["stack"]["name"]
             output = dynamodb_config["table"]["stack"]["output"]
 
-            outputs = cloudformation.get_stack_outputs(stack_name)
+            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
             table_name = outputs.get(output)
 
             if table_name:

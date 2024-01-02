@@ -10,7 +10,7 @@ readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies=[
-  "skymantle_boto_buddy[boto] @ git+https://github.com/skymantle-tech/skymantle-boto-buddy@main"
+  "skymantle_boto_buddy[boto] @ git+https://github.com/skymantle-tech/skymantle-boto-buddy@v0.1.0"
 ]
 
 [project.urls]

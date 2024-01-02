@@ -13,14 +13,14 @@ from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "ca-central-1"},
+        {"AWS_DEFAULT_REGION": "ca-central-1", "BOTO_BUDDY_DISABLE_CACHE": "true"},
     )
 
 
 @mock_ssm
 @mock_dynamodb
 def test_load_data_by_ssm():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
@@ -48,7 +48,7 @@ def test_load_data_by_ssm():
 @mock_cloudformation
 @mock_dynamodb
 def test_load_data_by_cfn():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
@@ -64,7 +64,7 @@ def test_load_data_by_cfn():
         "Outputs": {"db_name": {"Value": "some_table"}},
     }
 
-    cfn_client = boto3.client("cloudformation", region_name="ca-central-1")
+    cfn_client = boto3.client("cloudformation")
     cfn_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
 
     data_loader_config = {
@@ -83,7 +83,7 @@ def test_load_data_by_cfn():
 @mock_cloudformation
 @mock_dynamodb
 def test_load_data_by_cfn_invalid_output():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
@@ -99,7 +99,7 @@ def test_load_data_by_cfn_invalid_output():
         "Outputs": {"wrong_db_name": {"Value": "some_table"}},
     }
 
-    cfn_client = boto3.client("cloudformation", region_name="ca-central-1")
+    cfn_client = boto3.client("cloudformation")
     cfn_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
 
     data_loader_config = {
@@ -116,7 +116,7 @@ def test_load_data_by_cfn_invalid_output():
 
 @mock_dynamodb
 def test_load_and_cleanup_data():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
@@ -145,7 +145,7 @@ def test_load_and_cleanup_data():
 
 @mock_dynamodb
 def test_get_data():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
@@ -168,7 +168,7 @@ def test_get_data():
 
 @mock_dynamodb
 def test_add_key_and_cleanup_data():
-    dynamodb_client = boto3.client("dynamodb", region_name="ca-central-1")
+    dynamodb_client = boto3.client("dynamodb")
 
     dynamodb_client.create_table(
         BillingMode="PAY_PER_REQUEST",
