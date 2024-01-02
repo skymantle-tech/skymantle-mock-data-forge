@@ -142,7 +142,7 @@ For the DynamoDb configuration, the table name can be specific or  proviced thro
 ```
 
 
-For the S3 configuration, the bucket name can be specific or  proviced through an SSM parameter or the output of a CloutFormation stack (similar to DynamoDB). 
+For the S3 configuration, the bucket name can be specific or  provided through an SSM parameter or the output of a CloudFormation stack (similar to DynamoDB). 
 
 The following object data is supported:
 - text
