@@ -12,6 +12,12 @@ def mock_dynamodb_forge(mocker: MockerFixture) -> MagicMock:
     return mock
 
 
+@pytest.fixture()
+def mock_s3_forge(mocker: MockerFixture) -> MagicMock:
+    mock = mocker.patch("skymantle_mock_data_forge.forge_factory.S3Forge")
+    return mock
+
+
 def test_forge_init(mock_dynamodb_forge):
     data_forge_config = [
         {
@@ -60,7 +66,7 @@ def test_forge_init_to_many_forge_type(mock_dynamodb_forge):
     assert "Can only have one of the following per config:" in str(e.value)
 
 
-def test_load_data(mock_dynamodb_forge):
+def test_load_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
     data_forge_config = [
         {
             "forge_id": "some_config",
@@ -74,9 +80,48 @@ def test_load_data(mock_dynamodb_forge):
 
     forge_factory = ForgeFactory(data_forge_config)
 
+    mock_s3_forge.assert_not_called()
+    mock_dynamodb_forge.assert_called_once_with(
+        "some_config",
+        {
+            "table": {"name": "some_table"},
+            "primary_key_names": ["PK"],
+            "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        },
+        None,
+    )
+
     forge_factory.load_data("some_config")
 
     mock_dynamodb_forge.return_value.load_data.assert_called_once_with()
+
+
+def test_load_data_s3(mock_dynamodb_forge, mock_s3_forge):
+    data_forge_config = [
+        {
+            "forge_id": "some_config",
+            "s3": {
+                "bucket": {"name": "some_table"},
+                "s3_objects": [{"key": "some_key_1", "data": {"text": "Some Data"}}],
+            },
+        }
+    ]
+
+    forge_factory = ForgeFactory(data_forge_config)
+
+    mock_dynamodb_forge.assert_not_called()
+    mock_s3_forge.assert_called_once_with(
+        "some_config",
+        {
+            "bucket": {"name": "some_table"},
+            "s3_objects": [{"key": "some_key_1", "data": {"text": "Some Data"}}],
+        },
+        None,
+    )
+
+    forge_factory.load_data("some_config")
+
+    mock_s3_forge.return_value.load_data.assert_called_once_with()
 
 
 def test_load_data_invalid_id(mock_dynamodb_forge):

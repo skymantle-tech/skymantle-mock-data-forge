@@ -19,7 +19,8 @@ class ForgeFactory:
             if len(forge_types) != 1:
                 raise Exception(f"Can only have one of the following per config: {list(forges.keys())}")
 
-            self.data_managers[forge_id] = forges[forge_types[0]](forge_id, data_loader_config["dynamodb"], session)
+            forge_type = forge_types[0]
+            self.data_managers[forge_id] = forges[forge_type](forge_id, data_loader_config[forge_type], session)
 
     def add_key(self, forge_id: str, key: dict[str, str]) -> None:
         data_manager = self.data_managers.get(forge_id)
