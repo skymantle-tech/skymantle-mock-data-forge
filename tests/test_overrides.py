@@ -64,14 +64,26 @@ def test_format_value():
 def test_call_function():
     new_ids = []
 
+    func_key = []
+    func_value = []
+    func_context = []
+
     def generate_id(key: str, value: any, context: dict) -> any:
-        new_id = str(uuid.uuid4())
         nonlocal new_ids
+        nonlocal func_key
+        nonlocal func_value
+        nonlocal func_context
+
+        func_key.append(key)
+        func_value.append(value)
+        func_context.append(context)
+
+        new_id = str(uuid.uuid4())
         new_ids.append(new_id)
 
         return new_id
 
-    data = [{"id": ""}, {"id": ""}]
+    data = [{"id": "old1"}, {"id": "old2"}]
 
     overrides = [
         {
@@ -86,6 +98,10 @@ def test_call_function():
 
     assert new_ids[0] != new_ids[1]
     assert update_data == [{"id": new_ids[0]}, {"id": new_ids[1]}]
+
+    assert func_key == ["id", "id"]
+    assert func_value == ["old1", "old2"]
+    assert func_context == [{"id": "old1"}, {"id": "old2"}]
 
 
 def test_key_path_list():

@@ -73,7 +73,7 @@ class BaseForge:
                 temp_item[end_key] = value.format(*override)
 
             case OverideType.CALL_FUNCTION:
-                temp_item[end_key] = override(end_key, temp_item[end_key], copy.deepcopy(temp_item))
+                temp_item[end_key] = override(end_key, temp_item[end_key], copy.deepcopy(item))
 
             case _:
                 raise Exception(f"Unsupported override type - {override_type}")
