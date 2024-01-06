@@ -46,6 +46,10 @@ class ForgeFactory:
         else:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
+    def load_all_data(self) -> None:
+        for forge_id in self.data_managers:
+            self.load_data(forge_id)
+
     def cleanup_data(self, forge_id: str) -> None:
         data_manager = self.data_managers.get(forge_id)
 
@@ -53,3 +57,7 @@ class ForgeFactory:
             data_manager.cleanup_data()
         else:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
+
+    def cleanup_all_data(self) -> None:
+        for forge_id in self.data_managers:
+            self.cleanup_data(forge_id)
