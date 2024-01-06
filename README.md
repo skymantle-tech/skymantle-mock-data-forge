@@ -18,9 +18,11 @@ Currently the package isn't on pypi, however the GitHub repo can be referenced d
 Use the forge factory to manage data to multiple destinations (any combination of DynamoDB tables and S3 buckets). An id is used to specify each unique destination. The forge factor provides the following functions:
 
 - `load_data` - for the given forge ID load data in to the appropriate destination
+- `load_all_data` - loads data across all destinations
 - `get_data` - for the given forge ID returns the data collection from the configuration
 - `add_key` - when new data is created through tests you can provide their key so that it's included in the cleanup is called
 - `cleanup_data` - for the given forge ID remove test data from the appropriate destination
+- `cleanup_all_data` - removes test data across all destinations
 
 ### Examples
 
