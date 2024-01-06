@@ -18,9 +18,11 @@ Currently the package isn't on pypi, however the GitHub repo can be referenced d
 Use the forge factory to manage data to multiple destinations (any combination of DynamoDB tables and S3 buckets). An id is used to specify each unique destination. The forge factor provides the following functions:
 
 - `load_data` - for the given forge ID load data in to the appropriate destination
+- `load_all_data` - loads data across all destinations
 - `get_data` - for the given forge ID returns the data collection from the configuration
 - `add_key` - when new data is created through tests you can provide their key so that it's included in the cleanup is called
 - `cleanup_data` - for the given forge ID remove test data from the appropriate destination
+- `cleanup_all_data` - removes test data across all destinations
 
 ### Examples
 
@@ -87,6 +89,38 @@ from boto3 import Session
 
 session = Session(profile_name="developer")
 factory = ForgeFactory(config, session)
+
+# ...
+```
+
+- Override specific data values at run time. Useful when config files are stored in static json files.
+
+```python
+from datetime import UTC, datetime
+from skymantle_mock_data_forge.forge_factory import ForgeFactory
+from skymantle_mock_data_forge.models import OverideType
+
+config = [
+    {
+        "forge_id": "some_config_id",
+        "dynamodb": {
+            "table": {"name": "some_table"},
+            "primary_key_names": ["PK"],
+            "items": [{"PK": "some_key_1", "Description": "Some description 1", "CreateDate": ""}],
+        },
+    }
+]
+
+overrides = [
+    {
+        "key_paths": "CreateDate",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": datetime.now(UTC).isoformat(),
+    }
+]
+
+factory = ForgeFactory(config, overrides)
+factory.load_data("some_config_id")
 
 # ...
 ```
@@ -165,11 +199,11 @@ The following object data is supported:
                 "data": {"json": {"some_key": "some_value"}}
             },
             {
-                "key": "some_key_2", 
+                "key": "some_key_3", 
                 "data": {"base64": "SGVsbG8gV29ybGQh"}
             },
             {
-                "key": "some_key_2", 
+                "key": "some_key_4", 
                 "data": {
                     "csv": [
                         ["a", "b"],
@@ -182,4 +216,121 @@ The following object data is supported:
         ]
     }
 }
+```
+
+## Overrides
+
+
+In some cases it's easier to store config files in json for sharing. When coming from static sources, overrides allow data to be changed at runtime. this can be used for setting values like the AWS account id for the current context or the current date. The following type of modifications can be used:
+
+- Replace Value
+    - Will replace the value with a new one
+    - For example if create date is current "" it can be replaced with "2023-01-01"
+- Format Value
+    - Will used pythons `str.format(*args)`
+    - The original value must be a string, the replacement is index based.
+    - For example if ddescription is "{} Assemble{}" it back be formated to "Avengers Assemble!"
+- Call Function
+    - will call a custom function when processing each item.
+    - The signature of the funct is func(key: str, value: any, context: dict) -> any:
+        - key - The current key (ie: CreateDate)
+        - value - The current value for the given key
+        - conext - The current item being built
+        - return - the new value.
+
+In the case of nested dictionaries, key paths are supported which are "." seperated. If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data.
+
+```python
+# Current config stored in full or in part in json files
+
+[
+    {
+        "forge_id": "some_config_id",
+        "dynamodb": {
+            "table": {"name": "some_table"},
+            "primary_key_names": ["pk"],
+            "items": [
+                {
+                    "pk": "", 
+                    "description": "Executed on {} Environment.",
+                    "audit": { "create_date": "", "last_update_date": "" }
+                },
+                {
+                    "pk": "", 
+                    "description": "Executed on {} Environment.",
+                    "audit": { "create_date": "", "last_update_date": "" }
+                }
+            ],
+        },
+    }
+]
+
+# Overrides
+
+def generate_id(key: str, value: any, context: dict) -> any:
+    return str(uuid.uuid4())
+
+current_date = datetime.now(UTC).isoformat()
+environment = os.environ.get("ENVIRONMENT")
+
+overrides = [
+    {
+        "key_paths": "pk",
+        "override_type": OverideType.CALL_FUNCTION,
+        "override": generate_id,
+    },
+    {
+        "key_paths": [
+            "audit.create_date",
+            "audit.last_update_date",
+        ],
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": current_date,
+    },
+    {
+        "key_paths": "description",
+        "override_type": OverideType.FORMAT_VALUE,
+        "override": [environment],
+    }
+]
+
+# The resulting data 
+
+{
+    "pk": "11184314-b3fd-4a2d-bf79-bb50eabc9985", 
+    "description": "Executed on Test Environment.",
+    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" }
+},
+{
+    "pk": "91aa7686-6dbd-47a1-a779-891436fdfac0", 
+    "description": "Executed on Test Environment.",
+    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" }
+}
+
+```
+
+By default, the same list of overrides is distributed to all destinations, if you an override needs to vary by destination a forge Id can be provided.
+
+```python
+
+overrides = [
+    {
+        "key_paths": "data.text",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "Some Other Data",
+    },
+    {
+        "forge_id": "some_config_1",
+        "key_paths": "PK",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "some_other_key_1",
+    },
+    {
+        "forge_id": "some_config_2",
+        "key_paths": "PK",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "some_other_key_2",
+    }
+]
+
 ```

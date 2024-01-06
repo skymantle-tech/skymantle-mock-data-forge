@@ -6,6 +6,7 @@ import pytest
 from moto import mock_cloudformation, mock_s3, mock_ssm
 from pytest_mock import MockerFixture
 
+from skymantle_mock_data_forge.models import OverideType
 from skymantle_mock_data_forge.s3_forge import S3Forge
 
 
@@ -282,3 +283,36 @@ def test_add_key_and_cleanup_data():
         s3_client.get_object(Bucket="some_bucket", Key="some_key")
 
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
+def test_override():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key",
+                "data": {"json": {"some_key": "some_value"}},
+            }
+        ],
+    }
+
+    overrides = [
+        {
+            "key_paths": "data.json.some_key",
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": "some_other_value",
+        },
+    ]
+
+    manager = S3Forge("some-config", s3_config, overrides)
+    manager.load_data()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == b'{"some_key": "some_other_value"}'
+
+    data = manager.get_data()
+    assert data == [{"key": "some_key", "data": {"json": {"some_key": "some_other_value"}}}]

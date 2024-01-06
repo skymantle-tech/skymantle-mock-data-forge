@@ -103,6 +103,8 @@ select = [
 ignore = [
   # Ignore checks for use `datetime.UTC` alias
   "UP017",
+  # Ignore exception must not use a string literal
+  "EM101",
   # Ignore checks for f-string literal in exception message
   "EM102",
   # Ignore too many arguments in function definition

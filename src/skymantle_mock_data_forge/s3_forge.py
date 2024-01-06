@@ -7,13 +7,23 @@ import json
 from boto3 import Session
 from skymantle_boto_buddy import cloudformation, s3, ssm
 
-from skymantle_mock_data_forge.models import S3ForgeConfig, S3ObjectConfig
+from skymantle_mock_data_forge.base_forge import BaseForge
+from skymantle_mock_data_forge.models import (
+    DataForgeConfigOverride,
+    S3ForgeConfig,
+    S3ObjectConfig,
+)
 
 
-class S3Forge:
-    def __init__(self, forge_id: str, s3_config: S3ForgeConfig, session: Session = None) -> None:
-        self.forge_id: str = forge_id
-        self.aws_session = session
+class S3Forge(BaseForge):
+    def __init__(
+        self,
+        forge_id: str,
+        s3_config: S3ForgeConfig,
+        overrides: list[DataForgeConfigOverride] | None = None,
+        session: Session = None,
+    ) -> None:
+        super().__init__(forge_id, overrides, session)
 
         # Get the S3 bucket name
         if s3_config["bucket"].get("name"):
@@ -32,7 +42,7 @@ class S3Forge:
             else:
                 raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
 
-        self.s3_objects: list[S3ObjectConfig] = [copy.deepcopy(s3_object) for s3_object in s3_config["s3_objects"]]
+        self.s3_objects: list[S3ObjectConfig] = self._override_data(s3_config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in s3_config["s3_objects"]]
 
     def get_data(self):

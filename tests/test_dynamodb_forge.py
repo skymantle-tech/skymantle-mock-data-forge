@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 import boto3
 import pytest
@@ -7,6 +8,7 @@ from moto import mock_cloudformation, mock_dynamodb, mock_ssm
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
+from skymantle_mock_data_forge.models import OverideType
 
 
 @pytest.fixture(autouse=True)
@@ -194,3 +196,39 @@ def test_add_key_and_cleanup_data():
 
     response = dynamodb_client.get_item(TableName="some_table", Key={"PK": {"S": "some_key_1"}})
     assert response.get("Item") is None
+
+
+@mock_dynamodb
+def test_override():
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+    )
+
+    data_loader_config = {
+        "table": {"name": "some_table"},
+        "primary_key_names": ["PK"],
+        "items": [{"PK": "", "Description": "Some description 1"}],
+    }
+
+    pk = str(uuid.uuid4())
+    overrides = [
+        {
+            "key_paths": "PK",
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": pk,
+        },
+    ]
+
+    manager = DynamoDbForge("some-config", data_loader_config, overrides)
+    manager.load_data()
+
+    response = dynamodb_client.get_item(TableName="some_table", Key={"PK": {"S": pk}})
+    assert response["Item"] == {"PK": {"S": pk}, "Description": {"S": "Some description 1"}}
+
+    data = manager.get_data()
+    assert data == [{"PK": pk, "Description": "Some description 1"}]
