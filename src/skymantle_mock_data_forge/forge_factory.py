@@ -25,8 +25,14 @@ class ForgeFactory:
                 raise Exception(f"Can only have one of the following per config: {list(forges.keys())}")
 
             forge_type = forge_types[0]
+
+            forge_overrides = None
+            if overrides is not None:
+                forge_overrides = [override for override in overrides if override.get("forge_id") is None]
+                forge_overrides.extend([override for override in overrides if override.get("forge_id") == forge_id])
+
             self.data_managers[forge_id] = forges[forge_type](
-                forge_id, data_loader_config[forge_type], overrides, session
+                forge_id, data_loader_config[forge_type], forge_overrides, session
             )
 
     def add_key(self, forge_id: str, key: dict[str, str]) -> None:

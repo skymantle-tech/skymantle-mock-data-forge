@@ -49,6 +49,7 @@ class OverideType(Enum):
 
 
 class DataForgeConfigOverride(TypedDict):
+    forge_id: str | None
     key_paths: str | list[str]
     override_type: OverideType
     override: any

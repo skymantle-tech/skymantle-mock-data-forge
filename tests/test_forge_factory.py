@@ -57,23 +57,35 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
         },
     ]
 
-    overrides = [
-        {
-            "key_paths": "data.json.some_key",
-            "override_type": OverideType.REPLACE_VALUE,
-            "override": "some_other_value",
-        },
-    ]
+    for_all = {
+        "key_paths": "PK",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "some_other_key_1",
+    }
 
-    ForgeFactory(data_forge_config, overrides)
+    for_dynamodb = {
+        "forge_id": "some_config_1",
+        "key_paths": "PK",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "some_other_key_1",
+    }
+
+    for_s3 = {
+        "forge_id": "some_config_2",
+        "key_paths": "data.text",
+        "override_type": OverideType.REPLACE_VALUE,
+        "override": "Some Other Data",
+    }
+
+    ForgeFactory(data_forge_config, [for_all, for_dynamodb, for_s3])
 
     forge_id = data_forge_config[0]["forge_id"]
     dynamodb = data_forge_config[0]["dynamodb"]
-    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, overrides, None)
+    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, [for_all, for_dynamodb], None)
 
     forge_id = data_forge_config[1]["forge_id"]
     s3 = data_forge_config[1]["s3"]
-    mock_s3_forge.assert_called_once_with(forge_id, s3, overrides, None)
+    mock_s3_forge.assert_called_once_with(forge_id, s3, [for_all, for_s3], None)
 
 
 def test_forge_init_invalid_forge_type(mock_dynamodb_forge):
