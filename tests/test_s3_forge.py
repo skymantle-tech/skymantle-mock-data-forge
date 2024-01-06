@@ -286,7 +286,7 @@ def test_add_key_and_cleanup_data():
 
 
 @mock_s3
-def test_load_json_and_cleanup_data():
+def test_override():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
 
