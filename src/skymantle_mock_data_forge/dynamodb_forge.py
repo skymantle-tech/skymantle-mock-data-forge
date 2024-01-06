@@ -3,13 +3,22 @@ import copy
 from boto3 import Session
 from skymantle_boto_buddy import cloudformation, dynamodb, ssm
 
-from skymantle_mock_data_forge.models import DynamoDbForgeConfig
+from skymantle_mock_data_forge.base_forge import BaseForge
+from skymantle_mock_data_forge.models import (
+    DataForgeConfigOverride,
+    DynamoDbForgeConfig,
+)
 
 
-class DynamoDbForge:
-    def __init__(self, forge_id: str, dynamodb_config: DynamoDbForgeConfig, session: Session = None) -> None:
-        self.forge_id: str = forge_id
-        self.aws_session = session
+class DynamoDbForge(BaseForge):
+    def __init__(
+        self,
+        forge_id: str,
+        dynamodb_config: DynamoDbForgeConfig,
+        overrides: list[DataForgeConfigOverride] | None = None,
+        session: Session = None,
+    ) -> None:
+        super().__init__(forge_id, overrides, session)
 
         # Get the DynamoDB table name
         if dynamodb_config["table"].get("name"):
@@ -29,7 +38,7 @@ class DynamoDbForge:
                 raise Exception(f"Unable to find a dynamodb_table for stack: {stack_name} and output: {output}")
 
         self.primary_key_names: list[str] = dynamodb_config["primary_key_names"].copy()
-        self.items: list[dict] = [copy.deepcopy(item) for item in dynamodb_config["items"]]
+        self.items: list[dict] = self._override_data(dynamodb_config["items"])
 
         # Populate the keys list with the keys from all the items.
         # TODO: Validate key conforms to primary_key_names

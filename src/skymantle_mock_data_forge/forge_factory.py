@@ -1,12 +1,17 @@
 from boto3 import Session
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
-from skymantle_mock_data_forge.models import DataForgeConfig
+from skymantle_mock_data_forge.models import DataForgeConfig, DataForgeConfigOverride
 from skymantle_mock_data_forge.s3_forge import S3Forge
 
 
 class ForgeFactory:
-    def __init__(self, config: list[DataForgeConfig], session: Session = None) -> None:
+    def __init__(
+        self,
+        config: list[DataForgeConfig],
+        overrides: list[DataForgeConfigOverride] | None = None,
+        session: Session = None,
+    ) -> None:
         forges = {"dynamodb": DynamoDbForge, "s3": S3Forge}
 
         self.data_managers: dict[str, DynamoDbForge] = {}
@@ -20,7 +25,9 @@ class ForgeFactory:
                 raise Exception(f"Can only have one of the following per config: {list(forges.keys())}")
 
             forge_type = forge_types[0]
-            self.data_managers[forge_id] = forges[forge_type](forge_id, data_loader_config[forge_type], session)
+            self.data_managers[forge_id] = forges[forge_type](
+                forge_id, data_loader_config[forge_type], overrides, session
+            )
 
     def add_key(self, forge_id: str, key: dict[str, str]) -> None:
         data_manager = self.data_managers.get(forge_id)

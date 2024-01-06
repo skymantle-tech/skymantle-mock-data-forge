@@ -4,6 +4,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.forge_factory import ForgeFactory
+from skymantle_mock_data_forge.models import OverideType
 
 
 @pytest.fixture()
@@ -34,7 +35,45 @@ def test_forge_init(mock_dynamodb_forge):
 
     forge_id = data_forge_config[0]["forge_id"]
     dynamodb = data_forge_config[0]["dynamodb"]
-    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, None)
+    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, None, None)
+
+
+def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
+    data_forge_config = [
+        {
+            "forge_id": "some_config_1",
+            "dynamodb": {
+                "table": {"name": "some_table"},
+                "primary_key_names": ["PK"],
+                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+            },
+        },
+        {
+            "forge_id": "some_config_2",
+            "s3": {
+                "bucket": {"name": "some_table"},
+                "s3_objects": [{"key": "some_key_1", "data": {"text": "Some Data"}}],
+            },
+        },
+    ]
+
+    overrides = [
+        {
+            "key_paths": "data.json.some_key",
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": "some_other_value",
+        },
+    ]
+
+    ForgeFactory(data_forge_config, overrides)
+
+    forge_id = data_forge_config[0]["forge_id"]
+    dynamodb = data_forge_config[0]["dynamodb"]
+    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, overrides, None)
+
+    forge_id = data_forge_config[1]["forge_id"]
+    s3 = data_forge_config[1]["s3"]
+    mock_s3_forge.assert_called_once_with(forge_id, s3, overrides, None)
 
 
 def test_forge_init_invalid_forge_type(mock_dynamodb_forge):
@@ -141,6 +180,7 @@ def test_load_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
             "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
         },
         None,
+        None,
     )
 
     forge_factory.load_data("some_config")
@@ -168,6 +208,7 @@ def test_load_data_s3(mock_dynamodb_forge, mock_s3_forge):
             "bucket": {"name": "some_table"},
             "s3_objects": [{"key": "some_key_1", "data": {"text": "Some Data"}}],
         },
+        None,
         None,
     )
 
