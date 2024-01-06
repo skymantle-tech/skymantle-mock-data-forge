@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TypedDict
 
 
@@ -39,3 +40,15 @@ class DataForgeConfig(TypedDict):
     forge_id: str
     dynamodb: DynamoDbForgeConfig
     s3: S3ForgeConfig
+
+
+class OverideType(Enum):
+    REPLACE_VALUE = 0
+    FORMAT_VALUE = 1
+    CALL_FUNCTION = 2
+
+
+class DataForgeConfigOverride(TypedDict):
+    key_paths: str | list[str]
+    override_type: OverideType
+    override: any
