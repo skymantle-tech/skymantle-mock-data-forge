@@ -43,7 +43,7 @@ class S3Forge(BaseForge):
                 raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
 
         self.s3_objects: list[S3ObjectConfig] = self._override_data(s3_config["s3_objects"])
-        self.keys: list[str] = [s3_object["key"] for s3_object in s3_config["s3_objects"]]
+        self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
     def get_data(self):
         return [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
