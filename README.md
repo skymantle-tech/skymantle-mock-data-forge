@@ -238,7 +238,13 @@ In some cases it's easier to store config files in json for sharing. When coming
         - conext - The current item being built
         - return - the new value.
 
-In the case of nested dictionaries, key paths are supported which are "." seperated. If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data.
+In the case of nested dictionaries, key paths are supported which are "." seperated, key paths will also traverse sub lists. Current it's not possible to specify an index, all items in the list will be updated. 
+
+If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data. 
+
+The default behaviour for overrides is to ignore key path errors, however to alter this behaviour by setting the `DATA_FORGE_SUPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
+
+### Example
 
 ```python
 # Current config stored in full or in part in json files
@@ -253,12 +259,14 @@ In the case of nested dictionaries, key paths are supported which are "." sepera
                 {
                     "pk": "", 
                     "description": "Executed on {} Environment.",
-                    "audit": { "create_date": "", "last_update_date": "" }
+                    "audit": { "create_date": "", "last_update_date": "" },
+                    "items": [{"id":""},{"id":""}]
                 },
                 {
                     "pk": "", 
                     "description": "Executed on {} Environment.",
-                    "audit": { "create_date": "", "last_update_date": "" }
+                    "audit": { "create_date": "", "last_update_date": "" },
+                    "items": [{"id":""},{"id":""}]
                 }
             ],
         },
@@ -275,7 +283,10 @@ environment = os.environ.get("ENVIRONMENT")
 
 overrides = [
     {
-        "key_paths": "pk",
+        "key_paths": [
+            "pk",
+            "items.id",
+        ],
         "override_type": OverideType.CALL_FUNCTION,
         "override": generate_id,
     },
@@ -299,12 +310,21 @@ overrides = [
 {
     "pk": "11184314-b3fd-4a2d-bf79-bb50eabc9985", 
     "description": "Executed on Test Environment.",
-    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" }
+    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" },
+    "items": [
+        {"id":"e61e4001-ac84-43fb-8ba4-0f2ca5972c83"},
+        {"id":"9ea2d4ff-9a01-4ea6-95ea-4f6f01e797ca"}
+    ]
 },
 {
     "pk": "91aa7686-6dbd-47a1-a779-891436fdfac0", 
     "description": "Executed on Test Environment.",
-    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" }
+    "audit": { "create_date": "2024-01-06T22:59:00.469843+00:00", "last_update_date": "2024-01-06T22:59:00.469843+00:00" },
+    "items": [
+        {"id":"45aef30f-a6da-448b-bbac-2530f5aad558"},
+        {"id":"65722f85-f799-4a85-9415-088bbcd55d8c"}
+    ]
+},
 }
 
 ```
