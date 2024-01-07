@@ -60,7 +60,7 @@ class BaseForge:
                 raise Exception(f"The key:{key} does not exist.")
 
         except Exception as e:
-            suppress_key_path_errors = os.environ.get("DATA_FORGE_SUPRESS_KEY_PATH_ERRORS", "true")
+            suppress_key_path_errors = os.environ.get("DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS", "true")
 
             if suppress_key_path_errors in ["0", "false", "no", "off"]:
                 raise e
