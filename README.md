@@ -242,7 +242,7 @@ In the case of nested dictionaries, key paths are supported which are "." sepera
 
 If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data. 
 
-The default behaviour for overrides is to ignore key path errors, however to alter this behaviour by setting the `DATA_FORGE_SUPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
+The default behaviour for overrides is to ignore key path errors, however to alter this behaviour by setting the `DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
 
 ### Example
 

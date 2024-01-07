@@ -186,7 +186,7 @@ def test_nested_lists_empty():
 
 
 def test_nested_lists_invalid():
-    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+    os.environ["DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS"] = "false"
 
     data = [{"id": "", "items": ["id", "id", "id"]}]
 
@@ -241,7 +241,7 @@ def test_invalid_data():
 
 
 def test_key_path_not_found():
-    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+    os.environ["DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS"] = "false"
 
     data = [{"create_date": "", "update_date": ""}]
 
@@ -299,7 +299,7 @@ def test_invalid_key_path_list():
 
 
 def test_base_key_exists_but_not_dict():
-    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+    os.environ["DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS"] = "false"
 
     data = [{"audit": ""}]
 
@@ -320,7 +320,7 @@ def test_base_key_exists_but_not_dict():
     assert str(e.value) == "The key:audit does not exist or its value is not a dict"
 
 
-def test_base_key_exists_but_not_dict_supress():
+def test_base_key_exists_but_not_dict_suppress():
     data = [{"current_date": "", "audit": ""}]
 
     current_date = datetime.now(UTC).isoformat()
