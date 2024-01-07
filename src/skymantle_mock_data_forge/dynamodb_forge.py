@@ -15,8 +15,8 @@ class DynamoDbForge(BaseForge):
         self,
         forge_id: str,
         dynamodb_config: DynamoDbForgeConfig,
-        overrides: list[DataForgeConfigOverride] | None = None,
         session: Session = None,
+        overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         super().__init__(forge_id, overrides, session)
 

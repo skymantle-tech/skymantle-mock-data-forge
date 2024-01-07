@@ -20,8 +20,8 @@ class S3Forge(BaseForge):
         self,
         forge_id: str,
         s3_config: S3ForgeConfig,
-        overrides: list[DataForgeConfigOverride] | None = None,
         session: Session = None,
+        overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         super().__init__(forge_id, overrides, session)
 

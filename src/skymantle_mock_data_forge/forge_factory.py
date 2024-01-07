@@ -9,8 +9,8 @@ class ForgeFactory:
     def __init__(
         self,
         config: list[DataForgeConfig],
-        overrides: list[DataForgeConfigOverride] | None = None,
         session: Session = None,
+        overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         forges = {"dynamodb": DynamoDbForge, "s3": S3Forge}
 
@@ -32,7 +32,7 @@ class ForgeFactory:
                 forge_overrides.extend([override for override in overrides if override.get("forge_id") == forge_id])
 
             self.data_managers[forge_id] = forges[forge_type](
-                forge_id, data_loader_config[forge_type], forge_overrides, session
+                forge_id, data_loader_config[forge_type], session, forge_overrides
             )
 
     def add_key(self, forge_id: str, key: dict[str, str]) -> None:
