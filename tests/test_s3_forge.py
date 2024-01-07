@@ -308,7 +308,7 @@ def test_override():
         },
     ]
 
-    manager = S3Forge("some-config", s3_config, overrides)
+    manager = S3Forge("some-config", s3_config, overrides=overrides)
     manager.load_data()
 
     response = s3_client.get_object(Bucket="some_bucket", Key="some_key")

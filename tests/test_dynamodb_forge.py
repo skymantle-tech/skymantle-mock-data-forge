@@ -224,7 +224,7 @@ def test_override():
         },
     ]
 
-    manager = DynamoDbForge("some-config", data_loader_config, overrides)
+    manager = DynamoDbForge("some-config", data_loader_config, overrides=overrides)
     manager.load_data()
 
     response = dynamodb_client.get_item(TableName="some_table", Key={"PK": {"S": pk}})

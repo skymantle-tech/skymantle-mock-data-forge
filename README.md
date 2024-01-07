@@ -119,7 +119,7 @@ overrides = [
     }
 ]
 
-factory = ForgeFactory(config, overrides)
+factory = ForgeFactory(config, overrides=overrides)
 factory.load_data("some_config_id")
 
 # ...
@@ -309,23 +309,23 @@ overrides = [
 
 ```
 
-By default, the same list of overrides is distributed to all destinations, if you an override needs to vary by destination a forge Id can be provided.
+By default, the same list of overrides is distributed to all destinations, if an override needs to vary by destination a forge Id can be provided.
 
 ```python
 
 overrides = [
-    {
+    { # Will go to all destinations
         "key_paths": "data.text",
         "override_type": OverideType.REPLACE_VALUE,
         "override": "Some Other Data",
     },
-    {
+    { # Will go to some_config_1
         "forge_id": "some_config_1",
         "key_paths": "PK",
         "override_type": OverideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     },
-    {
+    { # Will go to some_config_2
         "forge_id": "some_config_2",
         "key_paths": "PK",
         "override_type": OverideType.REPLACE_VALUE,

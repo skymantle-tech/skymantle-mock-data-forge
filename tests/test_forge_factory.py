@@ -77,15 +77,15 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
         "override": "Some Other Data",
     }
 
-    ForgeFactory(data_forge_config, [for_all, for_dynamodb, for_s3])
+    ForgeFactory(data_forge_config, overrides=[for_all, for_dynamodb, for_s3])
 
     forge_id = data_forge_config[0]["forge_id"]
     dynamodb = data_forge_config[0]["dynamodb"]
-    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, [for_all, for_dynamodb], None)
+    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, None, [for_all, for_dynamodb])
 
     forge_id = data_forge_config[1]["forge_id"]
     s3 = data_forge_config[1]["s3"]
-    mock_s3_forge.assert_called_once_with(forge_id, s3, [for_all, for_s3], None)
+    mock_s3_forge.assert_called_once_with(forge_id, s3, None, [for_all, for_s3])
 
 
 def test_forge_init_invalid_forge_type(mock_dynamodb_forge):
