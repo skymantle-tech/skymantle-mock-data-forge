@@ -40,18 +40,34 @@ class BaseForge:
             override = config_override.get("override")
 
             for key_path in key_paths:
-                keys = key_path.split(".")
-
                 for item in data:
-                    self._replace_values(item, keys, override_type, override)
+                    self._replace_values(item, key_path, override_type, override)
 
         return data
 
-    def _replace_values(self, item: dict, keys: list[str], override_type: OverideType, override: any):
+    def _replace_values(self, item: dict, key_path: str, override_type: OverideType, override: any):
+        keys = key_path.split(".")
+        prefix = ""
         temp_item = item
 
+        # Traverse the dictionary till you get to the last key
         for key in keys[:-1]:
+            prefix += f"{key}."
+
             temp_item = temp_item.get(key)
+
+            if isinstance(temp_item, list):
+                sub_key_path = key_path.removeprefix(prefix)
+
+                # If the item is a list of dictionary. Iterate through the list and finished
+                # traversing the key path in each of the items.
+                for sub_item in temp_item:
+                    if not isinstance(sub_item, dict):
+                        raise Exception(f"The key:{key} must be a list of dicts")
+
+                    self._replace_values(sub_item, sub_key_path, override_type, override)
+
+                return
 
             if not isinstance(temp_item, dict):
                 raise Exception(f"The key:{key} does not exist or its value is not a dict")
