@@ -1,4 +1,5 @@
 import copy
+import os
 
 from boto3 import Session
 
@@ -41,16 +42,55 @@ class BaseForge:
 
             for key_path in key_paths:
                 for item in data:
-                    self._replace_values(item, key_path, override_type, override)
+                    self._update_item(item, key_path, override_type, override)
 
         return data
 
-    def _replace_values(self, item: dict, key_path: str, override_type: OverideType, override: any):
+    def _update_item(self, item: dict, key_path: str, override_type: OverideType, override: any):
+        try:
+            result = self._travel_key_path(item, key_path, override_type, override)
+
+            if result is None:
+                return
+
+            key = result[0]
+            item_to_update = result[1]
+
+            if key not in item_to_update:
+                raise Exception(f"The key:{key} does not exist.")
+
+        except Exception as e:
+            suppress_key_path_errors = os.environ.get("DATA_FORGE_SUPRESS_KEY_PATH_ERRORS", "true")
+
+            if suppress_key_path_errors in ["0", "false", "no", "off"]:
+                raise e
+
+            return
+
+        match override_type:
+            case OverideType.REPLACE_VALUE:
+                item_to_update[key] = override
+
+            case OverideType.FORMAT_VALUE:
+                value = item_to_update[key]
+
+                if not isinstance(value, str):
+                    raise Exception(f"The value for key:{key} must be str for FORMAT_VALUE.")
+
+                item_to_update[key] = value.format(*override)
+
+            case OverideType.CALL_FUNCTION:
+                item_to_update[key] = override(key, item_to_update[key], copy.deepcopy(item))
+
+            case _:
+                raise Exception(f"Unsupported override type - {override_type}")
+
+    def _travel_key_path(self, item: dict, key_path: str, override_type: OverideType, override: any) -> dict:
         keys = key_path.split(".")
+
         prefix = ""
         temp_item = item
 
-        # Traverse the dictionary till you get to the last key
         for key in keys[:-1]:
             prefix += f"{key}."
 
@@ -65,31 +105,11 @@ class BaseForge:
                     if not isinstance(sub_item, dict):
                         raise Exception(f"The key:{key} must be a list of dicts")
 
-                    self._replace_values(sub_item, sub_key_path, override_type, override)
+                    self._update_item(sub_item, sub_key_path, override_type, override)
 
-                return
+                return None
 
             if not isinstance(temp_item, dict):
                 raise Exception(f"The key:{key} does not exist or its value is not a dict")
 
-        end_key = keys[-1]
-        if end_key not in temp_item:
-            raise Exception(f"The key:{end_key} does not exist.")
-
-        match override_type:
-            case OverideType.REPLACE_VALUE:
-                temp_item[end_key] = override
-
-            case OverideType.FORMAT_VALUE:
-                value = temp_item[end_key]
-
-                if not isinstance(value, str):
-                    raise Exception(f"The value for key:{end_key} must be str for FORMAT_VALUE.")
-
-                temp_item[end_key] = value.format(*override)
-
-            case OverideType.CALL_FUNCTION:
-                temp_item[end_key] = override(end_key, temp_item[end_key], copy.deepcopy(item))
-
-            case _:
-                raise Exception(f"Unsupported override type - {override_type}")
+        return keys[-1], temp_item

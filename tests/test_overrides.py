@@ -186,6 +186,8 @@ def test_nested_lists_empty():
 
 
 def test_nested_lists_invalid():
+    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+
     data = [{"id": "", "items": ["id", "id", "id"]}]
 
     key = str(uuid.uuid4())
@@ -239,6 +241,8 @@ def test_invalid_data():
 
 
 def test_key_path_not_found():
+    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+
     data = [{"create_date": "", "update_date": ""}]
 
     overrides = [
@@ -295,6 +299,8 @@ def test_invalid_key_path_list():
 
 
 def test_base_key_exists_but_not_dict():
+    os.environ["DATA_FORGE_SUPRESS_KEY_PATH_ERRORS"] = "false"
+
     data = [{"audit": ""}]
 
     current_date = datetime.now(UTC).isoformat()
@@ -312,6 +318,29 @@ def test_base_key_exists_but_not_dict():
         forge._override_data(data)
 
     assert str(e.value) == "The key:audit does not exist or its value is not a dict"
+
+
+def test_base_key_exists_but_not_dict_supress():
+    data = [{"current_date": "", "audit": ""}]
+
+    current_date = datetime.now(UTC).isoformat()
+    overrides = [
+        {
+            "key_paths": "current_date",
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": current_date,
+        },
+        {
+            "key_paths": "audit.create_date",
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": current_date,
+        },
+    ]
+
+    forge = BaseForge("string", overrides)
+    update_data = forge._override_data(data)
+
+    assert update_data == [{"current_date": current_date, "audit": ""}]
 
 
 def test_invalid_format_value():
