@@ -147,6 +147,65 @@ def test_multi_level_key_path():
     assert update_data == [{"key": key, "audit": {"create_date": current_date}}]
 
 
+def test_nested_lists():
+    data = [{"id": "", "items": [{"id": ""}, {"id": ""}, {"id": ""}]}]
+
+    key = str(uuid.uuid4())
+
+    overrides = [
+        {
+            "key_paths": ["id", "items.id"],
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": key,
+        },
+    ]
+
+    forge = BaseForge("string", overrides)
+    update_data = forge._override_data(data)
+
+    assert update_data == [{"id": key, "items": [{"id": key}, {"id": key}, {"id": key}]}]
+
+
+def test_nested_lists_empty():
+    data = [{"id": "", "items": []}]
+
+    key = str(uuid.uuid4())
+
+    overrides = [
+        {
+            "key_paths": ["id", "items.id"],
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": key,
+        },
+    ]
+
+    forge = BaseForge("string", overrides)
+    update_data = forge._override_data(data)
+
+    assert update_data == [{"id": key, "items": []}]
+
+
+def test_nested_lists_invalid():
+    data = [{"id": "", "items": ["id", "id", "id"]}]
+
+    key = str(uuid.uuid4())
+
+    overrides = [
+        {
+            "key_paths": ["id", "items.id"],
+            "override_type": OverideType.REPLACE_VALUE,
+            "override": key,
+        },
+    ]
+
+    forge = BaseForge("string", overrides)
+
+    with pytest.raises(Exception) as e:
+        forge._override_data(data)
+
+    assert str(e.value) == "The key:items must be a list of dicts"
+
+
 def test_invalid_overrides():
     data = [{"create_date": "", "update_date": ""}]
 
