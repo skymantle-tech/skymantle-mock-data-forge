@@ -43,34 +43,47 @@ class ForgeFactory:
         else:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
-    def get_data(self, forge_id: str) -> dict:
-        data_manager = self.data_managers.get(forge_id)
+    def get_data(self, forge_id: str | None = None) -> None:
+        forge_ids = self._get_forge_ids(forge_id)
 
-        if data_manager:
-            return data_manager.get_data()
+        data = []
+        for forge_id in forge_ids:
+            data_manager = self.data_managers.get(forge_id)
+
+            if data_manager:
+                data.extend(data_manager.get_data())
+            else:
+                raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
+
+        return data
+
+    def load_data(self, forge_id: str | None = None) -> None:
+        forge_ids = self._get_forge_ids(forge_id)
+
+        for forge_id in forge_ids:
+            data_manager = self.data_managers.get(forge_id)
+
+            if data_manager:
+                data_manager.load_data()
+            else:
+                raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
+
+    def cleanup_data(self, forge_id: str | None = None) -> None:
+        forge_ids = self._get_forge_ids(forge_id)
+
+        for forge_id in forge_ids:
+            data_manager = self.data_managers.get(forge_id)
+
+            if data_manager:
+                data_manager.cleanup_data()
+            else:
+                raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
+
+    def _get_forge_ids(self, forge_id: str | None) -> list[str]:
+        forge_ids: list[str] = []
+        if forge_id is None:
+            forge_ids.extend(self.data_managers.keys())
         else:
-            raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
+            forge_ids.append(forge_id)
 
-    def load_data(self, forge_id: str) -> None:
-        data_manager = self.data_managers.get(forge_id)
-
-        if data_manager:
-            data_manager.load_data()
-        else:
-            raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
-
-    def load_all_data(self) -> None:
-        for forge_id in self.data_managers:
-            self.load_data(forge_id)
-
-    def cleanup_data(self, forge_id: str) -> None:
-        data_manager = self.data_managers.get(forge_id)
-
-        if data_manager:
-            data_manager.cleanup_data()
-        else:
-            raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
-
-    def cleanup_all_data(self) -> None:
-        for forge_id in self.data_managers:
-            self.cleanup_data(forge_id)
+        return forge_ids

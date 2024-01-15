@@ -28,6 +28,7 @@ class S3ObjectDataConfig(TypedDict):
 
 class S3ObjectConfig(TypedDict):
     key: str
+    tags: dict[str, str | list[str]]
     data: S3ObjectDataConfig
 
 

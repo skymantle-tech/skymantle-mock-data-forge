@@ -117,7 +117,7 @@ def test_forge_init_to_many_forge_type(mock_dynamodb_forge):
     assert "Can only have one of the following per config:" in str(e.value)
 
 
-def test_load_all_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
+def test_load_all_data(mock_dynamodb_forge, mock_s3_forge):
     data_forge_config = [
         {
             "forge_id": "some_config_1",
@@ -137,13 +137,13 @@ def test_load_all_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
     ]
 
     forge_factory = ForgeFactory(data_forge_config)
-    forge_factory.load_all_data()
+    forge_factory.load_data()
 
     mock_dynamodb_forge.return_value.load_data.assert_called_once_with()
     mock_s3_forge.return_value.load_data.assert_called_once_with()
 
 
-def test_cleanup_all_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
+def test_cleanup_all_data(mock_dynamodb_forge, mock_s3_forge):
     data_forge_config = [
         {
             "forge_id": "some_config_1",
@@ -163,7 +163,7 @@ def test_cleanup_all_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
     ]
 
     forge_factory = ForgeFactory(data_forge_config)
-    forge_factory.cleanup_all_data()
+    forge_factory.cleanup_data()
 
     mock_dynamodb_forge.return_value.cleanup_data.assert_called_once_with()
     mock_s3_forge.return_value.cleanup_data.assert_called_once_with()
