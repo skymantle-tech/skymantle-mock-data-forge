@@ -26,7 +26,7 @@ def test_forge_init(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -45,7 +45,7 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         },
         {
@@ -58,14 +58,14 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
     ]
 
     for_all = {
-        "key_paths": "PK",
+        "key_paths": "data.PK",
         "override_type": OverideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
 
     for_dynamodb = {
         "forge_id": "some_config_1",
-        "key_paths": "PK",
+        "key_paths": "data.PK",
         "override_type": OverideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
@@ -124,7 +124,7 @@ def test_load_all_data(mock_dynamodb_forge, mock_s3_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         },
         {
@@ -176,7 +176,7 @@ def test_load_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -189,7 +189,7 @@ def test_load_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
         {
             "table": {"name": "some_table"},
             "primary_key_names": ["PK"],
-            "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+            "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
         },
         None,
         None,
@@ -236,7 +236,7 @@ def test_load_data_invalid_id(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -256,7 +256,7 @@ def test_cleanup_data(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -275,7 +275,7 @@ def test_cleanup_invalid_id(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -295,7 +295,7 @@ def test_add_key_data(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -314,7 +314,7 @@ def test_add_key_invalid_id(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -334,7 +334,7 @@ def test_get_key_data(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]
@@ -355,7 +355,7 @@ def test_get_key_invalid_id(mock_dynamodb_forge):
             "dynamodb": {
                 "table": {"name": "some_table"},
                 "primary_key_names": ["PK"],
-                "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+                "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
             },
         }
     ]

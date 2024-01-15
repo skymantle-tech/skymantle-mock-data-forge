@@ -7,6 +7,7 @@ from skymantle_mock_data_forge.base_forge import BaseForge
 from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
     DynamoDbForgeConfig,
+    DynamoDbItemConfig,
 )
 
 
@@ -38,7 +39,7 @@ class DynamoDbForge(BaseForge):
                 raise Exception(f"Unable to find a dynamodb_table for stack: {stack_name} and output: {output}")
 
         self.primary_key_names: list[str] = dynamodb_config["primary_key_names"].copy()
-        self.items: list[dict] = self._override_data(dynamodb_config["items"])
+        self.items: list[DynamoDbItemConfig] = self._override_data(dynamodb_config["items"])
 
         # Populate the keys list with the keys from all the items.
         # TODO: Validate key conforms to primary_key_names
@@ -46,7 +47,7 @@ class DynamoDbForge(BaseForge):
         for item in self.items:
             key = {}
             for primary_key_name in self.primary_key_names:
-                key[primary_key_name] = item[primary_key_name]
+                key[primary_key_name] = item["data"][primary_key_name]
 
             self.keys.append(key)
 
@@ -59,7 +60,7 @@ class DynamoDbForge(BaseForge):
 
     def load_data(self) -> None:
         for item in self.items:
-            dynamodb.put_item_simplified(self.table_name, item, session=self.aws_session)
+            dynamodb.put_item_simplified(self.table_name, item["data"], session=self.aws_session)
 
     def cleanup_data(self) -> None:
         for key in self.keys:

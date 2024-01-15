@@ -13,10 +13,15 @@ class ResourceConfig(TypedDict):
     stack: CfnStackConfig
 
 
+class DynamoDbItemConfig(TypedDict):
+    tags: dict[str, str | list[str]]
+    data: dict
+
+
 class DynamoDbForgeConfig(TypedDict):
     table: ResourceConfig
     primary_key_names: list[str]
-    items: list[dict]
+    items: list[DynamoDbItemConfig]
 
 
 class S3ObjectDataConfig(TypedDict):

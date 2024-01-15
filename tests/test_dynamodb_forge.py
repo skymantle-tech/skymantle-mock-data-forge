@@ -37,7 +37,7 @@ def test_load_data_by_ssm():
     data_loader_config = {
         "table": {"ssm": "some_ssm_key"},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
@@ -72,7 +72,7 @@ def test_load_data_by_cfn():
     data_loader_config = {
         "table": {"stack": {"name": "some_stack", "output": "db_name"}},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
@@ -107,7 +107,7 @@ def test_load_data_by_cfn_invalid_output():
     data_loader_config = {
         "table": {"stack": {"name": "some_stack", "output": "db_name"}},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
     with pytest.raises(Exception) as e:
@@ -130,7 +130,7 @@ def test_load_and_cleanup_data():
     data_loader_config = {
         "table": {"name": "some_table"},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
@@ -159,13 +159,13 @@ def test_get_data():
     data_loader_config = {
         "table": {"name": "some_table"},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "some_key_1", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
     data = manager.get_data()
 
-    assert data == [{"PK": "some_key_1", "Description": "Some description 1"}]
+    assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
 @mock_dynamodb
@@ -212,13 +212,13 @@ def test_override():
     data_loader_config = {
         "table": {"name": "some_table"},
         "primary_key_names": ["PK"],
-        "items": [{"PK": "", "Description": "Some description 1"}],
+        "items": [{"data": {"PK": "", "Description": "Some description 1"}}],
     }
 
     pk = str(uuid.uuid4())
     overrides = [
         {
-            "key_paths": "PK",
+            "key_paths": "data.PK",
             "override_type": OverideType.REPLACE_VALUE,
             "override": pk,
         },
@@ -231,4 +231,4 @@ def test_override():
     assert response["Item"] == {"PK": {"S": pk}, "Description": {"S": "Some description 1"}}
 
     data = manager.get_data()
-    assert data == [{"PK": pk, "Description": "Some description 1"}]
+    assert data == [{"data": {"PK": pk, "Description": "Some description 1"}}]
