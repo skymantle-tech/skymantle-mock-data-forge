@@ -21,7 +21,7 @@ Use the forge factory to manage data to multiple destinations (any combination o
 
 - `load_data` - will load data across all destinations or the destination of the provided forge ID
 - `get_data` - will return data across all destinations or the data for the provided forge ID
-- `add_key` - when new data is created through tests you can provide their key so that it's included in the cleanup is called
+- `add_key` - when new data is created through tests you can provide it's key so that it's included in the `cleanup_data` call
 - `cleanup_data` - will remove data across all destinations or the destination of the provided forge ID
 
 ### Examples
