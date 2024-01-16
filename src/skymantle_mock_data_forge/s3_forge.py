@@ -5,11 +5,12 @@ import io
 import json
 
 from boto3 import Session
-from skymantle_boto_buddy import cloudformation, s3, ssm
+from skymantle_boto_buddy import s3
 
 from skymantle_mock_data_forge.base_forge import BaseForge
 from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
+    ForgeQuery,
     S3ForgeConfig,
     S3ObjectConfig,
 )
@@ -19,34 +20,25 @@ class S3Forge(BaseForge):
     def __init__(
         self,
         forge_id: str,
-        s3_config: S3ForgeConfig,
+        config: S3ForgeConfig,
         session: Session = None,
         overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
-        # Get the S3 bucket name
-        if s3_config["bucket"].get("name"):
-            self.bucket_name: str = s3_config["bucket"]["name"]
-        elif s3_config["bucket"].get("ssm"):
-            self.bucket_name: str = ssm.get_parameter(s3_config["bucket"]["ssm"], session=self.aws_session)
-        else:
-            stack_name = s3_config["bucket"]["stack"]["name"]
-            output = s3_config["bucket"]["stack"]["output"]
+        resource_config = config["bucket"]
+        self.bucket_name: str = self._get_destination_identifier(resource_config)
 
-            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
-            bucket_name = outputs.get(output)
-
-            if bucket_name:
-                self.bucket_name: str = bucket_name
-            else:
-                raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
-
-        self.s3_objects: list[S3ObjectConfig] = self._override_data(s3_config["s3_objects"])
+        self.s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
-    def get_data(self):
-        return [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
+    def get_data(self, query: ForgeQuery = None):
+        data = [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
+
+        if query is None:
+            return data
+
+        return self._get_data_query(query, data)
 
     def add_key(self, key: str) -> None:
         self.keys.append(key)
@@ -57,11 +49,18 @@ class S3Forge(BaseForge):
                 csv.writer(string_io).writerows(data)
                 return string_io.getvalue()
 
+        def load_file(filename: str):
+            with open(filename, "rb") as file:
+                data = file.read()
+
+            return data
+
         data_type_map = {
             "text": (lambda data: data),
             "json": (lambda data: json.dumps(data)),
             "base64": (lambda data: base64.b64decode(data)),
             "csv": create_csv,
+            "file": load_file,
         }
 
         for s3_object in self.s3_objects:

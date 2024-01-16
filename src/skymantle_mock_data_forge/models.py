@@ -2,6 +2,11 @@ from enum import Enum
 from typing import TypedDict
 
 
+class ForgeQuery(TypedDict):
+    StringEquals: dict[str, str | list[str]]
+    StringLike: dict[str, str | list[str]]
+
+
 class CfnStackConfig(TypedDict):
     name: str
     output: str
@@ -13,10 +18,15 @@ class ResourceConfig(TypedDict):
     stack: CfnStackConfig
 
 
+class DynamoDbItemConfig(TypedDict):
+    tags: dict[str, str | list[str]]
+    data: dict
+
+
 class DynamoDbForgeConfig(TypedDict):
     table: ResourceConfig
     primary_key_names: list[str]
-    items: list[dict]
+    items: list[DynamoDbItemConfig]
 
 
 class S3ObjectDataConfig(TypedDict):
@@ -24,10 +34,12 @@ class S3ObjectDataConfig(TypedDict):
     json: dict | list[dict]
     base64: str
     csv: list[list[str | int]]
+    file: str
 
 
 class S3ObjectConfig(TypedDict):
     key: str
+    tags: dict[str, str | list[str]]
     data: S3ObjectDataConfig
 
 

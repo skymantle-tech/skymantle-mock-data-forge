@@ -91,7 +91,7 @@ def test_load_data_by_cfn_invalid_output():
     with pytest.raises(Exception) as e:
         S3Forge("some-config", s3_config)
 
-    assert str(e.value) == "Unable to find a bucket_name for stack: some_stack and output: bucket_name"
+    assert str(e.value) == "Unable to find a resource for stack: some_stack and output: bucket_name"
 
 
 @mock_s3
@@ -203,6 +203,38 @@ def test_load_csv_and_cleanup_data():
 
 
 @mock_s3
+def test_load_file_and_cleanup_data():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key",
+                "data": {"file": "tests/data/amazon_webservices_logo.png"},
+            }
+        ],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    manager.load_data()
+
+    with open("tests/data/amazon_webservices_logo.png", "rb") as file:
+        data = file.read()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == data
+
+    manager.cleanup_data()
+
+    with pytest.raises(Exception) as e:
+        s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
 def test_load_data_invalid_type():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -260,6 +292,321 @@ def test_get_data():
     data = manager.get_data()
 
     assert data == [{"key": "some_key", "data": {"text": "Some Data"}}]
+
+
+@mock_s3
+def test_get_data_query_string_equals():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json"},
+                "data": {"json": {"some_key": "some_value"}},
+            },
+        ],
+    }
+
+    query = {"StringEquals": {"type": "text"}}
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}]
+
+
+@mock_s3
+def test_get_data_query_string_equals_list():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"some_key": "some_value"}},
+            },
+        ],
+    }
+    query = {"StringEquals": {"tests": "test_1"}}
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == [
+        {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
+    ]
+
+
+@mock_s3
+def test_get_data_query_string_like():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"key": "value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "json"},
+                "data": {"json": {"key": "value"}},
+            },
+        ],
+    }
+    query = {"StringLike": {"tests": "test"}}
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == [
+        {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
+        {"key": "some_key_2", "tags": {"type": "json", "tests": "test_3"}, "data": {"json": {"key": "value"}}},
+    ]
+
+
+@mock_s3
+def test_get_data_query_compound():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"some_key": "some_value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+        ],
+    }
+    query = {
+        "StringLike": {"tests": "test"},
+        "StringEquals": {"type": "text"},
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == [
+        {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
+    ]
+
+
+@mock_s3
+def test_get_data_query_no_matches():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}},
+        ],
+    }
+    query = {
+        "StringEquals": {"type": "json"},
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == []
+
+
+@mock_s3
+def test_get_data_query_no_matches_list():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+        ],
+    }
+    query = {
+        "StringEquals": {"tests": "test_3"},
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    data = manager.get_data(query=query)
+
+    assert data == []
+
+
+@mock_s3
+def test_get_data_query_invalid_operator():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {"StringNotEquals": {"type": "text"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert "Only the following query operators are supported:" in str(e.value)
+
+
+@mock_s3
+def test_get_data__empty_query():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert str(e.value) == "Missing operator from query"
+
+
+@mock_s3
+def test_get_data_query_invalid_condition():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {"StringEquals": "condition"}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert str(e.value) == "The condition for an operator must be a dict."
+
+
+@mock_s3
+def test_get_data_query_multiple_condition():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"key": "value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+        ],
+    }
+    query = {"StringEquals": {"type": "text", "tests": "test_1"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    data = manager.get_data(query=query)
+
+    assert data == [
+        {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
+    ]
+
+
+@mock_s3
+def test_get_data_query_invalid_tag_int():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": 0}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {"StringEquals": {"type": "text"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert str(e.value) == "Tag values can only be strings or list of strings."
+
+
+@mock_s3
+def test_get_data_query_invalid_tag_list():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": [0]}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {"StringEquals": {"type": "text"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert str(e.value) == "Tag values can only be strings or list of strings."
 
 
 @mock_s3
