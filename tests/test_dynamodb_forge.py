@@ -169,6 +169,66 @@ def test_get_data():
 
 
 @mock_dynamodb
+def test_get_data_query_string_equals():
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+    )
+
+    data_loader_config = {
+        "table": {"name": "some_table"},
+        "primary_key_names": ["PK"],
+        "items": [
+            {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
+            {"tags": {"tests": "test_2"}, "data": {"PK": "some_key_2", "Description": "Some description 2"}},
+        ],
+    }
+
+    query = {"StringEquals": {"tests": "test_1"}}
+
+    manager = DynamoDbForge("some-config", data_loader_config)
+    data = manager.get_data(query)
+
+    assert data == [{"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}}]
+
+
+@mock_dynamodb
+def test_get_data_query_string_like():
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+    )
+
+    data_loader_config = {
+        "table": {"name": "some_table"},
+        "primary_key_names": ["PK"],
+        "items": [
+            {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
+            {"tags": {"tests": "test_2"}, "data": {"PK": "some_key_2", "Description": "Some description 2"}},
+            {"data": {"PK": "some_key_3", "Description": "Some description 3"}},
+        ],
+    }
+
+    query = {"StringLike": {"tests": "test"}}
+
+    manager = DynamoDbForge("some-config", data_loader_config)
+    data = manager.get_data(query)
+
+    assert data == [
+        {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
+        {"tags": {"tests": "test_2"}, "data": {"PK": "some_key_2", "Description": "Some description 2"}},
+    ]
+
+
+@mock_dynamodb
 def test_add_key_and_cleanup_data():
     dynamodb_client = boto3.client("dynamodb")
 

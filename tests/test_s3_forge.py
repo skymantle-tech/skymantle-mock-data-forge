@@ -462,6 +462,26 @@ def test_get_data_query_invalid_operator():
 
 
 @mock_s3
+def test_get_data__empty_query():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}],
+    }
+
+    query = {}
+
+    manager = S3Forge("some-config", s3_config)
+
+    with pytest.raises(Exception) as e:
+        manager.get_data(query=query)
+
+    assert str(e.value) == "Missing operator from query"
+
+
+@mock_s3
 def test_get_data_query_invalid_condition():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")

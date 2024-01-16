@@ -51,8 +51,13 @@ class DynamoDbForge(BaseForge):
 
             self.keys.append(key)
 
-    def get_data(self):
-        return [copy.deepcopy(item) for item in self.items]
+    def get_data(self, query=None):
+        data = [copy.deepcopy(item) for item in self.items]
+
+        if query is None:
+            return data
+
+        return self._get_data_query(query, data)
 
     def add_key(self, key: dict[str, str]) -> None:
         # TODO: Validate key conforms to primary_key_names

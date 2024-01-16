@@ -46,54 +46,12 @@ class S3Forge(BaseForge):
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
     def get_data(self, query=None):
-        operators = {
-            "StringEquals": lambda value, condition_value: value == condition_value,
-            "StringLike": lambda value, condition_value: condition_value in value,
-        }
-
         data = [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
 
         if query is None:
             return data
 
-        if not set(query.keys()).issubset(operators):
-            raise Exception(f"Only the following query operators are supported: {list(operators.keys())}")
-
-        for condition in query.values():
-            if not isinstance(condition, dict):
-                raise Exception("The condition for an operator must be a dict.")
-
-            if len(condition.keys()) != 1:
-                raise Exception("An operator is only allowed a single condition key.")
-
-        for operator, condition in query.items():
-            condition_key = next(iter(condition.keys()))
-            condition_value = condition[condition_key]
-
-            data = [s3_object for s3_object in data if condition_key in s3_object["tags"]]
-
-            matches = []
-            for s3_object in data:
-                value = s3_object["tags"][condition_key]
-
-                if isinstance(value, str):
-                    if operators[operator](value, condition_value):
-                        matches.append(s3_object)
-
-                elif isinstance(value, list):
-                    for item in value:
-                        if not isinstance(item, str):
-                            raise Exception("Tag values can only be strings or list of strings.")
-
-                        if operators[operator](item, condition_value):
-                            matches.append(s3_object)
-                            break
-                else:
-                    raise Exception("Tag values can only be strings or list of strings.")
-
-            data = matches
-
-        return data
+        return self._get_data_query(query, data)
 
     def add_key(self, key: str) -> None:
         self.keys.append(key)
