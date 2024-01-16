@@ -20,20 +20,20 @@ class S3Forge(BaseForge):
     def __init__(
         self,
         forge_id: str,
-        s3_config: S3ForgeConfig,
+        config: S3ForgeConfig,
         session: Session = None,
         overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
         # Get the S3 bucket name
-        if s3_config["bucket"].get("name"):
-            self.bucket_name: str = s3_config["bucket"]["name"]
-        elif s3_config["bucket"].get("ssm"):
-            self.bucket_name: str = ssm.get_parameter(s3_config["bucket"]["ssm"], session=self.aws_session)
+        if config["bucket"].get("name"):
+            self.bucket_name: str = config["bucket"]["name"]
+        elif config["bucket"].get("ssm"):
+            self.bucket_name: str = ssm.get_parameter(config["bucket"]["ssm"], session=self.aws_session)
         else:
-            stack_name = s3_config["bucket"]["stack"]["name"]
-            output = s3_config["bucket"]["stack"]["output"]
+            stack_name = config["bucket"]["stack"]["name"]
+            output = config["bucket"]["stack"]["output"]
 
             outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
             bucket_name = outputs.get(output)
@@ -43,7 +43,7 @@ class S3Forge(BaseForge):
             else:
                 raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
 
-        self.s3_objects: list[S3ObjectConfig] = self._override_data(s3_config["s3_objects"])
+        self.s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
     def get_data(self, query: ForgeQuery = None):

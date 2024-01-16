@@ -35,7 +35,7 @@ def test_forge_init(mock_dynamodb_forge):
 
     forge_id = data_forge_config[0]["forge_id"]
     dynamodb = data_forge_config[0]["dynamodb"]
-    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, None, None)
+    mock_dynamodb_forge.assert_called_once_with(forge_id=forge_id, config=dynamodb, session=None, overrides=None)
 
 
 def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
@@ -81,11 +81,13 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
 
     forge_id = data_forge_config[0]["forge_id"]
     dynamodb = data_forge_config[0]["dynamodb"]
-    mock_dynamodb_forge.assert_called_once_with(forge_id, dynamodb, None, [for_all, for_dynamodb])
+    mock_dynamodb_forge.assert_called_once_with(
+        forge_id=forge_id, config=dynamodb, session=None, overrides=[for_all, for_dynamodb]
+    )
 
     forge_id = data_forge_config[1]["forge_id"]
     s3 = data_forge_config[1]["s3"]
-    mock_s3_forge.assert_called_once_with(forge_id, s3, None, [for_all, for_s3])
+    mock_s3_forge.assert_called_once_with(forge_id=forge_id, config=s3, session=None, overrides=[for_all, for_s3])
 
 
 def test_forge_init_invalid_forge_type(mock_dynamodb_forge):
@@ -185,14 +187,14 @@ def test_load_data_dynamodb(mock_dynamodb_forge, mock_s3_forge):
 
     mock_s3_forge.assert_not_called()
     mock_dynamodb_forge.assert_called_once_with(
-        "some_config",
-        {
+        forge_id="some_config",
+        config={
             "table": {"name": "some_table"},
             "primary_key_names": ["PK"],
             "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
         },
-        None,
-        None,
+        session=None,
+        overrides=None,
     )
 
     forge_factory.load_data("some_config")
@@ -215,13 +217,13 @@ def test_load_data_s3(mock_dynamodb_forge, mock_s3_forge):
 
     mock_dynamodb_forge.assert_not_called()
     mock_s3_forge.assert_called_once_with(
-        "some_config",
-        {
+        forge_id="some_config",
+        config={
             "bucket": {"name": "some_table"},
             "s3_objects": [{"key": "some_key_1", "data": {"text": "Some Data"}}],
         },
-        None,
-        None,
+        session=None,
+        overrides=None,
     )
 
     forge_factory.load_data("some_config")

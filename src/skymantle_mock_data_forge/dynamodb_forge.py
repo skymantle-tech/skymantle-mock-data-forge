@@ -16,20 +16,20 @@ class DynamoDbForge(BaseForge):
     def __init__(
         self,
         forge_id: str,
-        dynamodb_config: DynamoDbForgeConfig,
+        config: DynamoDbForgeConfig,
         session: Session = None,
         overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
         # Get the DynamoDB table name
-        if dynamodb_config["table"].get("name"):
-            self.table_name: str = dynamodb_config["table"]["name"]
-        elif dynamodb_config["table"].get("ssm"):
-            self.table_name: str = ssm.get_parameter(dynamodb_config["table"]["ssm"], session=self.aws_session)
+        if config["table"].get("name"):
+            self.table_name: str = config["table"]["name"]
+        elif config["table"].get("ssm"):
+            self.table_name: str = ssm.get_parameter(config["table"]["ssm"], session=self.aws_session)
         else:
-            stack_name = dynamodb_config["table"]["stack"]["name"]
-            output = dynamodb_config["table"]["stack"]["output"]
+            stack_name = config["table"]["stack"]["name"]
+            output = config["table"]["stack"]["output"]
 
             outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
             table_name = outputs.get(output)
@@ -39,8 +39,8 @@ class DynamoDbForge(BaseForge):
             else:
                 raise Exception(f"Unable to find a dynamodb_table for stack: {stack_name} and output: {output}")
 
-        self.primary_key_names: list[str] = dynamodb_config["primary_key_names"].copy()
-        self.items: list[DynamoDbItemConfig] = self._override_data(dynamodb_config["items"])
+        self.primary_key_names: list[str] = config["primary_key_names"].copy()
+        self.items: list[DynamoDbItemConfig] = self._override_data(config["items"])
 
         # Populate the keys list with the keys from all the items.
         # TODO: Validate key conforms to primary_key_names
