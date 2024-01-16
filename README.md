@@ -288,10 +288,9 @@ The following object data is supported:
 
 ## Querying Data For Testing
 
-Custom tags can be added to data that is managed by the forges, this will make it possible to catagorize and group data for using during specific tests. Tags are complete optional, but requried for querying.
+Custom tags can be added to data that is managed by the forges, this will make it possible to catagorize and group data for use during tests. Tags are completely optional, but requried for querying.
 
 - DynamoDB tag example
-
 ```json
 [
     {
@@ -325,10 +324,10 @@ Custom tags can be added to data that is managed by the forges, this will make i
 
 A query is made up of an operator and 1 or more condition key/value pairs. Supported operators are:
 
- - StringEquals - the value for the tag must match exactly to one of the items in the tag
- - StringLike - the value must be contained in on of the items in the tag
+ - StringEquals - the value for the tag must match exactly to one of the items in thes specified tag
+ - StringLike - the value must be contained in on of the items in the specified tag
 
- It's also possible to use both operators in the query. All operations of the query are limited to `AND` queries.
+ It's also possible to use both operators in the query. When dealing with multiple contitions and/or operators, queries are limited to logical `AND` queries.
 
  ### Examples
 
