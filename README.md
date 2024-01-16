@@ -89,12 +89,17 @@ config = [
 ]
 
 factory = ForgeFactory(config)
+
+# To load a single destination
+factory.load_data("some_config_id_2")
+
+# To load all destinations
 factory.load_data()
 
 # ...
 ```
 
-- provide forge factory with an AWS session
+- Provide forge factory with an AWS session
 
 ```python
 from boto3 import Session
@@ -124,8 +129,8 @@ config = [
                         "tests": [
                             "test_get_items", 
                             "test_get_item", 
-                            "test_update_item"
-                        ]
+                            "test_update_item",
+                        ],
                     },
                     "data": {"PK": "some_key_1", "Description": "Some description 1"},
                 },
@@ -150,7 +155,7 @@ pK_to_delete = data[0]["data"]["PK]
 #...
 ```
 
-- Override specific data values at run time. Useful when config files are stored in static json files.
+- Override specific values at run time. Useful when config files are stored in static json files or handling dates
 
 ```python
 from datetime import UTC, datetime
@@ -187,7 +192,7 @@ factory.load_data("some_config_id")
 
 The forge factory takes a list of configuration, each item in the lists must represent a single destination, either DynamoDB or S3.
 
-For the DynamoDb configuration, the table name can be specific or  proviced through an SSM parameter or the output of a CloutFormation stack
+For the DynamoDb configuration, the table name can be specific or  provided through an SSM parameter or the output of a CloudFormation stack
 
 - By table name
 
