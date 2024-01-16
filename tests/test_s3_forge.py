@@ -203,6 +203,38 @@ def test_load_csv_and_cleanup_data():
 
 
 @mock_s3
+def test_load_file_and_cleanup_data():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key",
+                "data": {"file": "tests/data/amazon_webservices_logo.png"},
+            }
+        ],
+    }
+
+    manager = S3Forge("some-config", s3_config)
+    manager.load_data()
+
+    with open("tests/data/amazon_webservices_logo.png", "rb") as file:
+        data = file.read()
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+    assert response["Body"].read() == data
+
+    manager.cleanup_data()
+
+    with pytest.raises(Exception) as e:
+        s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
+
+
+@mock_s3
 def test_load_data_invalid_type():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")

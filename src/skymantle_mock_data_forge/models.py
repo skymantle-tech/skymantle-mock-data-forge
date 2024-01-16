@@ -34,6 +34,7 @@ class S3ObjectDataConfig(TypedDict):
     json: dict | list[dict]
     base64: str
     csv: list[list[str | int]]
+    file: str
 
 
 class S3ObjectConfig(TypedDict):

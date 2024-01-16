@@ -49,11 +49,18 @@ class S3Forge(BaseForge):
                 csv.writer(string_io).writerows(data)
                 return string_io.getvalue()
 
+        def load_file(filename: str):
+            with open(filename, "rb") as file:
+                data = file.read()
+
+            return data
+
         data_type_map = {
             "text": (lambda data: data),
             "json": (lambda data: json.dumps(data)),
             "base64": (lambda data: base64.b64decode(data)),
             "csv": create_csv,
+            "file": load_file,
         }
 
         for s3_object in self.s3_objects:
