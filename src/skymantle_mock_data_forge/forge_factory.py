@@ -43,7 +43,7 @@ class ForgeFactory:
         else:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
-    def get_data(self, forge_id: str | None = None) -> None:
+    def get_data(self, forge_id: str | None = None, query=None) -> None:
         forge_ids = self._get_forge_ids(forge_id)
 
         data = []
@@ -51,7 +51,7 @@ class ForgeFactory:
             data_manager = self.data_managers.get(forge_id)
 
             if data_manager:
-                data.extend(data_manager.get_data())
+                data.extend(data_manager.get_data(query))
             else:
                 raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 

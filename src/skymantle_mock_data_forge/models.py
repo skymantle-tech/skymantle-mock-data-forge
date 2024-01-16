@@ -2,6 +2,11 @@ from enum import Enum
 from typing import TypedDict
 
 
+class ForgeQuery(TypedDict):
+    StringEquals: dict[str, str | list[str]]
+    StringLike: dict[str, str | list[str]]
+
+
 class CfnStackConfig(TypedDict):
     name: str
     output: str

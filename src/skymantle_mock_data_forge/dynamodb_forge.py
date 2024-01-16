@@ -8,6 +8,7 @@ from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
     DynamoDbForgeConfig,
     DynamoDbItemConfig,
+    ForgeQuery,
 )
 
 
@@ -51,7 +52,7 @@ class DynamoDbForge(BaseForge):
 
             self.keys.append(key)
 
-    def get_data(self, query=None):
+    def get_data(self, query: ForgeQuery = None):
         data = [copy.deepcopy(item) for item in self.items]
 
         if query is None:

@@ -5,7 +5,11 @@ from typing import Final
 
 from boto3 import Session
 
-from skymantle_mock_data_forge.models import DataForgeConfigOverride, OverideType
+from skymantle_mock_data_forge.models import (
+    DataForgeConfigOverride,
+    ForgeQuery,
+    OverideType,
+)
 
 
 class BaseForge:
@@ -21,7 +25,7 @@ class BaseForge:
         self.aws_session = session
         self.config_overrides = overrides
 
-    def _get_data_query(self, query, data):
+    def _get_data_query(self, query: ForgeQuery, data: dict) -> dict:
         if len(query.keys()) == 0:
             raise Exception("Missing operator from query")
 
@@ -32,18 +36,13 @@ class BaseForge:
             if not isinstance(condition, dict):
                 raise Exception("The condition for an operator must be a dict.")
 
-            if len(condition.keys()) != 1:
-                raise Exception("An operator is only allowed a single condition key.")
-
-        for operator, condition in query.items():
-            condition_key = next(iter(condition.keys()))
-            condition_value = condition[condition_key]
-
-            data = self._find_matches(data, operator, condition_key, condition_value)
+        for operator, conditions in query.items():
+            for condition_key, condition_value in conditions.items():
+                data = self._find_matches(data, operator, condition_key, condition_value)
 
         return data
 
-    def _find_matches(self, data, operator, condition_key, condition_value):
+    def _find_matches(self, data: dict, operator: str, condition_key: str, condition_value: str) -> dict:
         data = [item for item in data if condition_key in item.get("tags", {})]
 
         matches = []

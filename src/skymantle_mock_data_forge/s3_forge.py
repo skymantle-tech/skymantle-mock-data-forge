@@ -10,6 +10,7 @@ from skymantle_boto_buddy import cloudformation, s3, ssm
 from skymantle_mock_data_forge.base_forge import BaseForge
 from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
+    ForgeQuery,
     S3ForgeConfig,
     S3ObjectConfig,
 )
@@ -45,7 +46,7 @@ class S3Forge(BaseForge):
         self.s3_objects: list[S3ObjectConfig] = self._override_data(s3_config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
-    def get_data(self, query=None):
+    def get_data(self, query: ForgeQuery = None):
         data = [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
 
         if query is None:

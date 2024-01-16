@@ -502,23 +502,39 @@ def test_get_data_query_invalid_condition():
 
 
 @mock_s3
-def test_get_data_query_to_many_condition():
+def test_get_data_query_multiple_condition():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
 
     s3_config = {
         "bucket": {"name": "some_bucket"},
-        "s3_objects": [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}],
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"key": "value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+        ],
     }
-
     query = {"StringEquals": {"type": "text", "tests": "test_1"}}
 
     manager = S3Forge("some-config", s3_config)
 
-    with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+    data = manager.get_data(query=query)
 
-    assert str(e.value) == "An operator is only allowed a single condition key."
+    assert data == [
+        {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
+    ]
 
 
 @mock_s3
