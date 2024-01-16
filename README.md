@@ -451,11 +451,11 @@ In some cases it's easier to store config files in json for sharing. When coming
         - conext - The current item being built
         - return - the new value.
 
-In the case of nested dictionaries, key paths are supported which are "." seperated, key paths will also traverse sub lists. Current it's not possible to specify an index, all items in the list will be updated. 
+In the case of nested dictionaries, key paths are supported which are "." seperated, key paths will also traverse sub lists. Currently it's not possible to specify an index, all items in the list will be updated. 
 
 If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data. 
 
-The default behaviour for overrides is to ignore key path errors, however to alter this behaviour by setting the `DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
+The default behaviour for overrides is to ignore key path errors, however this behaviour can be altered by setting the `DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
 
 ### Example
 
