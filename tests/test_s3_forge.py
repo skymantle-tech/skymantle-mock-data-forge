@@ -91,7 +91,7 @@ def test_load_data_by_cfn_invalid_output():
     with pytest.raises(Exception) as e:
         S3Forge("some-config", s3_config)
 
-    assert str(e.value) == "Unable to find a bucket_name for stack: some_stack and output: bucket_name"
+    assert str(e.value) == "Unable to find a resource for stack: some_stack and output: bucket_name"
 
 
 @mock_s3

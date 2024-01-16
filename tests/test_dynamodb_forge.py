@@ -113,7 +113,7 @@ def test_load_data_by_cfn_invalid_output():
     with pytest.raises(Exception) as e:
         DynamoDbForge("some-config", data_loader_config)
 
-    assert str(e.value) == "Unable to find a dynamodb_table for stack: some_stack and output: db_name"
+    assert str(e.value) == "Unable to find a resource for stack: some_stack and output: db_name"
 
 
 @mock_dynamodb

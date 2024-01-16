@@ -1,7 +1,7 @@
 import copy
 
 from boto3 import Session
-from skymantle_boto_buddy import cloudformation, dynamodb, ssm
+from skymantle_boto_buddy import dynamodb
 
 from skymantle_mock_data_forge.base_forge import BaseForge
 from skymantle_mock_data_forge.models import (
@@ -22,22 +22,8 @@ class DynamoDbForge(BaseForge):
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
-        # Get the DynamoDB table name
-        if config["table"].get("name"):
-            self.table_name: str = config["table"]["name"]
-        elif config["table"].get("ssm"):
-            self.table_name: str = ssm.get_parameter(config["table"]["ssm"], session=self.aws_session)
-        else:
-            stack_name = config["table"]["stack"]["name"]
-            output = config["table"]["stack"]["output"]
-
-            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
-            table_name = outputs.get(output)
-
-            if table_name:
-                self.table_name: str = table_name
-            else:
-                raise Exception(f"Unable to find a dynamodb_table for stack: {stack_name} and output: {output}")
+        resource_config = config["table"]
+        self.table_name: str = self._get_destination_identifier(resource_config)
 
         self.primary_key_names: list[str] = config["primary_key_names"].copy()
         self.items: list[DynamoDbItemConfig] = self._override_data(config["items"])

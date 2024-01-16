@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import Final
 
 from boto3 import Session
+from skymantle_boto_buddy import cloudformation, ssm
 
 from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
@@ -24,6 +25,27 @@ class BaseForge:
         self.forge_id: str = forge_id
         self.aws_session = session
         self.config_overrides = overrides
+
+    def _get_destination_identifier(self, resource_config):
+        if resource_config.get("name"):
+            value = resource_config["name"]
+
+        elif resource_config.get("ssm"):
+            value = ssm.get_parameter(resource_config["ssm"], session=self.aws_session)
+
+        else:
+            stack_name = resource_config["stack"]["name"]
+            output = resource_config["stack"]["output"]
+
+            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
+            output_value = outputs.get(output)
+
+            if output_value:
+                value = output_value
+            else:
+                raise Exception(f"Unable to find a resource for stack: {stack_name} and output: {output}")
+
+        return value
 
     def _get_data_query(self, query: ForgeQuery, data: dict) -> dict:
         if len(query.keys()) == 0:

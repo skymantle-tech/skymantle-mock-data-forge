@@ -5,7 +5,7 @@ import io
 import json
 
 from boto3 import Session
-from skymantle_boto_buddy import cloudformation, s3, ssm
+from skymantle_boto_buddy import s3
 
 from skymantle_mock_data_forge.base_forge import BaseForge
 from skymantle_mock_data_forge.models import (
@@ -26,22 +26,8 @@ class S3Forge(BaseForge):
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
-        # Get the S3 bucket name
-        if config["bucket"].get("name"):
-            self.bucket_name: str = config["bucket"]["name"]
-        elif config["bucket"].get("ssm"):
-            self.bucket_name: str = ssm.get_parameter(config["bucket"]["ssm"], session=self.aws_session)
-        else:
-            stack_name = config["bucket"]["stack"]["name"]
-            output = config["bucket"]["stack"]["output"]
-
-            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
-            bucket_name = outputs.get(output)
-
-            if bucket_name:
-                self.bucket_name: str = bucket_name
-            else:
-                raise Exception(f"Unable to find a bucket_name for stack: {stack_name} and output: {output}")
+        resource_config = config["bucket"]
+        self.bucket_name: str = self._get_destination_identifier(resource_config)
 
         self.s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
