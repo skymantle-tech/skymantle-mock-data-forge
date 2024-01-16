@@ -26,7 +26,7 @@ Use the forge factory to manage data to multiple destinations (any combination o
 
 ### Examples
 
-- manage data in DynamoDB, assumes `AWS_PROFILE` environment variable is set
+- manage data in DynamoDB, assumes aws credentials environment variable are set, such as `AWS_PROFILE`
 
 ```python
 from skymantle_mock_data_forge.forge_factory import ForgeFactory
@@ -43,12 +43,26 @@ config = [
 ]
 
 factory = ForgeFactory(config)
-factory.load_data("some_config_id")
+factory.load_data()
 
 # perform tests
 
 factory.add_key("some_config_id", {"PK": "some_key_2"})
-factory.cleanup_data("some_config_id")
+factory.cleanup_data()
+```
+
+-  Load config from a json file
+
+```python
+from skymantle_mock_data_forge.forge_factory import ForgeFactory
+
+factory = ForgeFactory("path/to/file.json")
+factory.load_data()
+
+# perform tests
+
+factory.add_key("some_config_id", {"PK": "some_key_2"})
+factory.cleanup_data()
 ```
 
 - Managing multiple destinations
@@ -75,8 +89,7 @@ config = [
 ]
 
 factory = ForgeFactory(config)
-factory.load_data("some_config_id_1")
-factory.load_data("some_config_id_2")
+factory.load_data()
 
 # ...
 ```
@@ -455,7 +468,7 @@ The default behaviour for overrides is to ignore key path errors, however to alt
                 {
                     "data": {
                         "pk": "", 
-                        "description": "Executed on {} Environment.",
+                        "description": "Executed on {0} Environment.",
                         "audit": { "create_date": "", "last_update_date": "" },
                         "items": [{"id":""}, {"id":""}]
                     }
@@ -463,7 +476,7 @@ The default behaviour for overrides is to ignore key path errors, however to alt
                 {
                     "data": {
                         "pk": "", 
-                        "description": "Executed on {} Environment.",
+                        "description": "Executed on {0} Environment.",
                         "audit": { "create_date": "", "last_update_date": "" },
                         "items": [{"id":""}, {"id":""}]
                     }

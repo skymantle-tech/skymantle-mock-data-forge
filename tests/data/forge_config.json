@@ -1,0 +1,21 @@
+[
+	{
+		"forge_id": "some_config_1",
+		"dynamodb": {
+			"table": {
+				"name": "some_table"
+			},
+			"primary_key_names": [
+				"PK"
+			],
+			"items": [
+				{
+					"data": {
+						"PK": "some_key_1",
+						"Description": "Some description 1"
+					}
+				}
+			]
+		}
+	}
+]

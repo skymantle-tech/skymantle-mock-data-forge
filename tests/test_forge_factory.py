@@ -145,6 +145,24 @@ def test_load_all_data(mock_dynamodb_forge, mock_s3_forge):
     mock_s3_forge.return_value.load_data.assert_called_once_with()
 
 
+def test_load_data_from_file(mock_dynamodb_forge):
+    forge_factory = ForgeFactory("tests/data/forge_config.json")
+    forge_factory.load_data()
+
+    mock_dynamodb_forge.assert_called_once_with(
+        forge_id="some_config_1",
+        config={
+            "table": {"name": "some_table"},
+            "primary_key_names": ["PK"],
+            "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
+        },
+        session=None,
+        overrides=None,
+    )
+
+    mock_dynamodb_forge.return_value.load_data.assert_called_once_with()
+
+
 def test_cleanup_all_data(mock_dynamodb_forge, mock_s3_forge):
     data_forge_config = [
         {

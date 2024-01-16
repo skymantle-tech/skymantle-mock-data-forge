@@ -1,3 +1,5 @@
+import json
+
 from boto3 import Session
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
@@ -12,11 +14,16 @@ from skymantle_mock_data_forge.s3_forge import S3Forge
 class ForgeFactory:
     def __init__(
         self,
-        config: list[DataForgeConfig],
+        config: str | list[DataForgeConfig],
         session: Session = None,
         overrides: list[DataForgeConfigOverride] | None = None,
     ) -> None:
         forges = {"dynamodb": DynamoDbForge, "s3": S3Forge}
+
+        if isinstance(config, str):
+            with open(config) as file:
+                data = file.read()
+                config = json.loads(data)
 
         self.data_managers: dict[str, DynamoDbForge] = {}
 
