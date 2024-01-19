@@ -4,13 +4,21 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skymantle_mock_data_forge"
-description = "A library for deploying mock data to aws resources when running integration and end-to-end tests."
-authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
-readme = "README.md"
-dynamic = ["version"]
-requires-python = ">=3.11"
+version = "0.3.0"
 dependencies=[
-  "skymantle_boto_buddy[boto] @ git+https://github.com/skymantle-tech/skymantle-boto-buddy@v0.2.0"
+  "skymantle_boto_buddy[boto]"
+]
+requires-python = ">=3.11"
+authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
+description = "A library for deploying mock data to aws resources when running integration and end-to-end tests."
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python",
+  "Topic :: Software Development :: Testing",
 ]
 
 [project.urls]
@@ -19,9 +27,6 @@ Issues = "https://github.com/skymantle-tech/skymantle-mock-data-forge/issues"
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.hatch.version]
-path = "src/skymantle_mock_data_forge/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -32,7 +37,7 @@ dependencies = [
   "bandit",
   "black",
   "ruff",
-  "moto[s3,dynamodb,ssm,cloudformation]"
+  "moto[s3,dynamodb,ssm,cloudformation]",
 ]
 path = ".venv"
 
@@ -47,7 +52,7 @@ cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
 [tool.mypy]
 exclude = [
     "dist",
-    ".venv"
+    ".venv",
 ]
 
 [tool.black]
@@ -129,7 +134,6 @@ source = ["src"]
 omit = [
     ".venv/*",
     "tests/*",
-    "src/skymantle_mock_data_forge/__about__.py"
 ]
 
 [tool.coverage.report]
@@ -148,5 +152,5 @@ exclude = [
   "/.vscode",
   "/.github",
   ".gitignore",
-  "Makefile"
+  "Makefile",
 ]
