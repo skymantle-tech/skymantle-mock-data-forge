@@ -2,18 +2,14 @@
 
 # Skymantle Mock Data Forge
 
-A package for managing test data on aws resources, through configuration, when running integration and end-to-end tests in the cloud. Currently the package supports managing data on DynamoDb and S3.
-
-The following project commands are supported:
-- `make setup` - Installs all dependencies ands creates virtual environment
-- `make unitTests` - runs unit tests
-- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
-- `make build` - Creates distribution
+A package for managing test data on aws resources through configuration, when running integration and end-to-end tests in the cloud. Currently the package supports managing data on DynamoDb and S3.
 
 ## Installation
+To install use:
 
-Currently the package isn't on pypi, however the GitHub repo can be referenced directly in a requirements file.  For example:
-- `skymantle_mock_data_forge @ git+https://github.com/skymantle-tech/skymantle-mock-data-forge@v0.3.0`
+```
+pip3 install skymantle_mock_data_forge
+```
 
 ## Usage
 
@@ -575,3 +571,11 @@ overrides = [
 ]
 
 ```
+
+## Source Code Dev Notes
+
+The following project commands are supported:
+- `make setup` - Installs all dependencies ands creates virtual environment
+- `make unitTests` - runs unit tests
+- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
+- `make build` - Creates distribution
