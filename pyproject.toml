@@ -10,7 +10,7 @@ dependencies=[
 ]
 requires-python = ">=3.11"
 authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
-description = "A library for deploying mock data to aws resources when running integration and end-to-end tests."
+description = "A library for deploying test data to aws resources when running integration and end-to-end tests."
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
