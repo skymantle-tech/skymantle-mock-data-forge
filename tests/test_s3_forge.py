@@ -567,6 +567,40 @@ def test_get_data_query_multiple_condition():
 
 
 @mock_aws
+def test_get_data_exclude_tags():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"key": "value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+        ],
+    }
+    query = {"StringEquals": {"type": "text", "tests": "test_1"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    data = manager.get_data(query=query, include_tags=False)
+
+    assert data == [{"key": "some_key_1", "data": {"text": "Some Data"}}]
+
+
+@mock_aws
 def test_get_data_query_invalid_tag_int():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
