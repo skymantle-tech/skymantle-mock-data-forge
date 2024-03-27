@@ -19,5 +19,8 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "yaml.validate": false
+    "yaml.validate": false,
+    "cSpell.words": [
+        "moto"
+    ]
 }

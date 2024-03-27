@@ -4,7 +4,7 @@ import uuid
 
 import boto3
 import pytest
-from moto import mock_cloudformation, mock_dynamodb, mock_ssm
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
@@ -19,8 +19,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_ssm
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_ssm():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -47,8 +46,7 @@ def test_load_data_by_ssm():
     assert response["Item"] == {"PK": {"S": "some_key_1"}, "Description": {"S": "Some description 1"}}
 
 
-@mock_cloudformation
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_cfn():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -82,8 +80,7 @@ def test_load_data_by_cfn():
     assert response["Item"] == {"PK": {"S": "some_key_1"}, "Description": {"S": "Some description 1"}}
 
 
-@mock_cloudformation
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_cfn_invalid_output():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -116,7 +113,7 @@ def test_load_data_by_cfn_invalid_output():
     assert str(e.value) == "Unable to find a resource for stack: some_stack and output: db_name"
 
 
-@mock_dynamodb
+@mock_aws
 def test_load_and_cleanup_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -145,7 +142,7 @@ def test_load_and_cleanup_data():
     assert response.get("Item") is None
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -168,7 +165,7 @@ def test_get_data():
     assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data_query_string_equals():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -196,7 +193,7 @@ def test_get_data_query_string_equals():
     assert data == [{"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data_query_string_like():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -228,7 +225,7 @@ def test_get_data_query_string_like():
     ]
 
 
-@mock_dynamodb
+@mock_aws
 def test_add_key_and_cleanup_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -258,7 +255,7 @@ def test_add_key_and_cleanup_data():
     assert response.get("Item") is None
 
 
-@mock_dynamodb
+@mock_aws
 def test_override():
     dynamodb_client = boto3.client("dynamodb")
 
