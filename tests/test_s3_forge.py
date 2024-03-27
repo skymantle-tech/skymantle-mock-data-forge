@@ -491,7 +491,7 @@ def test_get_data_query_invalid_operator():
 
 
 @mock_aws
-def test_get_data__empty_query():
+def test_get_data_empty_query():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
 

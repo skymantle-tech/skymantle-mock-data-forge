@@ -39,7 +39,7 @@ class S3Forge(BaseForge):
             data = self._get_data_query(query, data)
 
         if not include_tags:
-            data = [item["data"] for item in data]
+            data = [{"key": item["key"], "data": item["data"]} for item in data]
 
         return data
 
