@@ -575,7 +575,9 @@ overrides = [
 ## Source Code Dev Notes
 
 The following project commands are supported:
-- `make setup` - Installs all dependencies ands creates virtual environment
-- `make unitTests` - runs unit tests
-- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
+- `make` - provides command line help
+- `make clean` - cleans out virtual env and distribution folder
+- `make install` - Installs virtual env and required packages
+- `make unit_tests` - runs unit tests
+- `make lint_and_analysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
 - `make build` - Creates distribution
