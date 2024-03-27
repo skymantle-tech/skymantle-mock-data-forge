@@ -209,7 +209,7 @@ def test_load_file_and_cleanup_data():
         "s3_objects": [
             {
                 "key": "some_key",
-                "data": {"file": "tests/data/amazon_webservices_logo.png"},
+                "data": {"file": "tests/data/amazon_web_services_logo.png"},
             }
         ],
     }
@@ -217,7 +217,7 @@ def test_load_file_and_cleanup_data():
     manager = S3Forge("some-config", s3_config)
     manager.load_data()
 
-    with open("tests/data/amazon_webservices_logo.png", "rb") as file:
+    with open("tests/data/amazon_web_services_logo.png", "rb") as file:
         data = file.read()
 
     response = s3_client.get_object(Bucket="some_bucket", Key="some_key")

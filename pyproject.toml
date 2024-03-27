@@ -30,7 +30,6 @@ allow-direct-references = true
 
 [tool.hatch.envs.default]
 dependencies = [
-  "mypy",
   "pytest",
   "pytest-cov",
   "pytest-mock",
@@ -41,26 +40,11 @@ dependencies = [
 ]
 path = ".venv"
 
-[tool.hatch.envs.default.scripts]
-_bandit = "bandit -c pyproject.toml -r {args:.}"
-_ruff = "ruff {args:.}"
-_black = "black --check --diff {args:.}"
-_mypy = "mypy --install-types --non-interactive {args:.}"
-cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
-
-
-[tool.mypy]
-exclude = [
-    "dist",
-    ".venv",
-]
-
 [tool.black]
 line-length = 120
 exclude = '''
 /(
     \.git
-  | \.mypy_cache
   | \.tox
   | venv
   | \.venv
@@ -78,7 +62,7 @@ exclude_dirs = [".venv", "tests", "dist"]
 [tool.ruff]
 target-version = "py311"
 line-length = 120
-select = [
+lint.select = [
   "A",
   "B",
   "C",
@@ -105,7 +89,7 @@ select = [
   "W",
   "YTT",
 ]
-ignore = [
+lint.ignore = [
   # Ignore checks for use `datetime.UTC` alias
   "UP017",
   # Ignore exception must not use a string literal
@@ -115,15 +99,15 @@ ignore = [
   # Ignore too many arguments in function definition
   "PLR0913"
 ]
-unfixable = []
+lint.unfixable = []
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 inline-quotes = "double"
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "I001"]
 

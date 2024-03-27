@@ -98,7 +98,7 @@ class ForgeFactory:
         return data
 
     def load_data(self, forge_id: str | None = None) -> None:
-        """Loads all data into forge detinations
+        """Loads all data into forge destinations
 
         Args:
             forge_id (str | None, optional): When provided will only load data for the specific forge. Defaults to None.
@@ -121,7 +121,7 @@ class ForgeFactory:
         """Deletes all data from forge destinations
 
         Args:
-            forge_id (str | None, optional): When provided will only cleaup the specific forge. Defaults to None.
+            forge_id (str | None, optional): When provided will only cleanup the specific forge. Defaults to None.
 
         Raises:
             Exception: Provided forge ID is not valid.

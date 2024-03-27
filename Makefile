@@ -13,12 +13,12 @@ install:
 	hatch env create default
 
 unit_tests:
-	hatch run cov
+	hatch run pytest -v --cov-config=pyproject.toml --cov ./src
 
 lint_and_analysis:
-	hatch run _ruff
-	hatch run _bandit
-	hatch run _black
+	hatch run ruff check .
+	hatch run bandit -c pyproject.toml -r .
+	hatch run black --check --diff .
 
 build:
 	hatch build
@@ -27,9 +27,9 @@ define HELP_TEXT
 Usage: make <command>
 
 Available commands:
-  clean                	Cleans out virtual env and distribution folder
-  install              	Installs virtual env and required packages
-  unit_tests           	Run unit tests
-  lint_and_analysis    	Runs ruff, bandit and black
-  build					Builds package distribution 
+  clean                 Cleans out virtual env and distribution folder
+  install               Installs virtual env and required packages
+  unit_tests            Run unit tests
+  lint_and_analysis     Runs ruff, bandit and black
+  build                 Builds package distribution 
 endef
