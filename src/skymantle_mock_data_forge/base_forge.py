@@ -9,7 +9,7 @@ from skymantle_boto_buddy import cloudformation, ssm
 from skymantle_mock_data_forge.models import (
     DataForgeConfigOverride,
     ForgeQuery,
-    OverideType,
+    OverrideType,
 )
 
 
@@ -121,7 +121,7 @@ class BaseForge:
 
         return data
 
-    def _update_item(self, item: dict, key_path: str, override_type: OverideType, override: any):
+    def _update_item(self, item: dict, key_path: str, override_type: OverrideType, override: any):
         try:
             result = self._travel_key_path(item, key_path, override_type, override)
 
@@ -143,10 +143,10 @@ class BaseForge:
             return
 
         match override_type:
-            case OverideType.REPLACE_VALUE:
+            case OverrideType.REPLACE_VALUE:
                 item_to_update[key] = override
 
-            case OverideType.FORMAT_VALUE:
+            case OverrideType.FORMAT_VALUE:
                 value = item_to_update[key]
 
                 if not isinstance(value, str):
@@ -154,13 +154,13 @@ class BaseForge:
 
                 item_to_update[key] = value.format(*override)
 
-            case OverideType.CALL_FUNCTION:
+            case OverrideType.CALL_FUNCTION:
                 item_to_update[key] = override(key, item_to_update[key], copy.deepcopy(item))
 
             case _:
                 raise Exception(f"Unsupported override type - {override_type}")
 
-    def _travel_key_path(self, item: dict, key_path: str, override_type: OverideType, override: any) -> dict:
+    def _travel_key_path(self, item: dict, key_path: str, override_type: OverrideType, override: any) -> dict:
         keys = key_path.split(".")
 
         prefix = ""

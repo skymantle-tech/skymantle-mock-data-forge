@@ -8,7 +8,7 @@ from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 
 @pytest.fixture(autouse=True)
@@ -276,7 +276,7 @@ def test_override():
     overrides = [
         {
             "key_paths": "data.PK",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": pk,
         },
     ]

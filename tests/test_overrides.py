@@ -6,7 +6,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.base_forge import BaseForge
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 
 @pytest.fixture(autouse=True)
@@ -33,7 +33,7 @@ def test_replace_value():
     overrides = [
         {
             "key_paths": "create_date",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         }
     ]
@@ -50,7 +50,7 @@ def test_format_value():
     overrides = [
         {
             "key_paths": "key_1",
-            "override_type": OverideType.FORMAT_VALUE,
+            "override_type": OverrideType.FORMAT_VALUE,
             "override": ["Avengers"],
         }
     ]
@@ -88,7 +88,7 @@ def test_call_function():
     overrides = [
         {
             "key_paths": "id",
-            "override_type": OverideType.CALL_FUNCTION,
+            "override_type": OverrideType.CALL_FUNCTION,
             "override": generate_id,
         }
     ]
@@ -111,7 +111,7 @@ def test_key_path_list():
     overrides = [
         {
             "key_paths": ["create_date", "update_date"],
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         }
     ]
@@ -131,12 +131,12 @@ def test_multi_level_key_path():
     overrides = [
         {
             "key_paths": "key",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": key,
         },
         {
             "key_paths": "audit.create_date",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         },
     ]
@@ -155,7 +155,7 @@ def test_nested_lists():
     overrides = [
         {
             "key_paths": ["id", "items.id"],
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": key,
         },
     ]
@@ -174,7 +174,7 @@ def test_nested_lists_empty():
     overrides = [
         {
             "key_paths": ["id", "items.id"],
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": key,
         },
     ]
@@ -195,7 +195,7 @@ def test_nested_lists_invalid():
     overrides = [
         {
             "key_paths": ["id", "items.id"],
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": key,
         },
     ]
@@ -227,7 +227,7 @@ def test_invalid_data():
     overrides = [
         {
             "key_paths": "id",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": "a string",
         },
     ]
@@ -248,7 +248,7 @@ def test_key_path_not_found():
     overrides = [
         {
             "key_paths": "id",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": "a string",
         },
     ]
@@ -266,7 +266,7 @@ def test_invalid_key_path():
     overrides = [
         {
             "key_paths": 1,
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": "a string",
         },
     ]
@@ -285,7 +285,7 @@ def test_invalid_key_path_list():
     overrides = [
         {
             "key_paths": [1],
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": "a string",
         },
     ]
@@ -307,7 +307,7 @@ def test_base_key_exists_but_not_dict():
     overrides = [
         {
             "key_paths": "audit.create_date",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         },
     ]
@@ -327,12 +327,12 @@ def test_base_key_exists_but_not_dict_suppress():
     overrides = [
         {
             "key_paths": "current_date",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         },
         {
             "key_paths": "audit.create_date",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": current_date,
         },
     ]
@@ -349,7 +349,7 @@ def test_invalid_format_value():
     overrides = [
         {
             "key_paths": "key_1",
-            "override_type": OverideType.FORMAT_VALUE,
+            "override_type": OverrideType.FORMAT_VALUE,
             "override": ["Avengers"],
         }
     ]

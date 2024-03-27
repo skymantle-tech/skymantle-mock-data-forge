@@ -21,6 +21,9 @@
     "python.testing.pytestEnabled": true,
     "yaml.validate": false,
     "cSpell.words": [
-        "moto"
+        "autouse",
+        "boto",
+        "moto",
+        "skymantle"
     ]
 }

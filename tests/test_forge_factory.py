@@ -4,7 +4,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.forge_factory import ForgeFactory
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 
 @pytest.fixture()
@@ -59,21 +59,21 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
 
     for_all = {
         "key_paths": "data.PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
 
     for_dynamodb = {
         "forge_id": "some_config_1",
         "key_paths": "data.PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
 
     for_s3 = {
         "forge_id": "some_config_2",
         "key_paths": "data.text",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "Some Other Data",
     }
 
