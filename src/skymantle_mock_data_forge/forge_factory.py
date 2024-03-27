@@ -71,7 +71,9 @@ class ForgeFactory:
         else:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
-    def get_data(self, forge_id: str | None = None, query: ForgeQuery = None) -> list[dict]:
+    def get_data(
+        self, forge_id: str | None = None, query: ForgeQuery = None, *, include_tags: bool = True
+    ) -> list[dict]:
         """Gets a copy of the data loaded into forge destination. Does not return data created outside of the forge.
 
         Args:
@@ -91,7 +93,7 @@ class ForgeFactory:
             data_manager = self.data_managers.get(forge_id)
 
             if data_manager:
-                data.extend(data_manager.get_data(query))
+                data.extend(data_manager.get_data(query=query, include_tags=include_tags))
             else:
                 raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 

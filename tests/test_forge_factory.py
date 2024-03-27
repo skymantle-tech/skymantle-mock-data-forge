@@ -364,7 +364,7 @@ def test_get_key_data(mock_dynamodb_forge):
 
     data = forge_factory.get_data("some_config")
 
-    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(None)
+    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, include_tags=True)
 
     assert data == [{"PK": "some_key_1", "Description": "Some description 1"}]
 

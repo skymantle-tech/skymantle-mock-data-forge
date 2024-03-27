@@ -32,13 +32,16 @@ class S3Forge(BaseForge):
         self.s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
 
-    def get_data(self, query: ForgeQuery = None):
+    def get_data(self, *, query: ForgeQuery, include_tags: bool):
         data = [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
 
-        if query is None:
-            return data
+        if query is not None:
+            data = self._get_data_query(query, data)
 
-        return self._get_data_query(query, data)
+        if not include_tags:
+            data = [item["data"] for item in data]
+
+        return data
 
     def add_key(self, key: str) -> None:
         self.keys.append(key)
