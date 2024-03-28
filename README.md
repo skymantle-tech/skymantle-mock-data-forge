@@ -17,6 +17,7 @@ Use the forge factory to manage data to multiple destinations (any combination o
 
 - `load_data` - will load data across all destinations or the destination of the provided forge ID
 - `get_data` - will return data across all destinations or the data for the provided forge ID, will only return data created by the forge
+- `get_data_first_item` - will return first item of data across all destinations or the data for the provided forge ID, will only return data created by the forge
 - `add_key` - when new data is created through tests you can provide it's key so that it's included in the `cleanup_data` call
 - `cleanup_data` - will remove data across all destinations or the destination of the provided forge ID
 
@@ -156,7 +157,7 @@ pK_to_delete = data[0]["data"]["PK]
 ```python
 from datetime import UTC, datetime
 from skymantle_mock_data_forge.forge_factory import ForgeFactory
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 config = [
     {
@@ -172,7 +173,7 @@ config = [
 overrides = [
     {
         "key_paths": "CreateDate",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": datetime.now(UTC).isoformat(),
     }
 ]
@@ -203,7 +204,7 @@ For the DynamoDb configuration, the table name can be specific or  provided thro
 }
 ```
 
-- By SSM paramter
+- By SSM parameter
 
 ```json
 {
@@ -284,7 +285,7 @@ The following object data is supported:
 
 ## Querying Data For Testing
 
-Custom tags can be added to data that is managed by the forges, this will make it possible to catagorize and group data for use during tests. Tags are completely optional, but requried for querying.
+Custom tags can be added to data that is managed by the forges, this will make it possible to categorize and group data for use during tests. Tags are completely optional, but required for querying.
 
 - DynamoDB tag example
 ```json
@@ -320,10 +321,10 @@ Custom tags can be added to data that is managed by the forges, this will make i
 
 A query is made up of an operator and 1 or more condition key/value pairs. Supported operators are:
 
- - StringEquals - the value for the tag must match exactly to one of the items in thes specified tag
+ - StringEquals - the value for the tag must match exactly to one of the items in the specified tag
  - StringLike - the value must be contained in on of the items in the specified tag
 
- It's also possible to use both operators in the query. When dealing with multiple contitions and/or operators, queries are limited to logical `AND` queries.
+ It's also possible to use both operators in the query. When dealing with multiple conditions and/or operators, queries are limited to logical `AND` queries.
 
  ### Examples
 
@@ -438,18 +439,18 @@ In some cases it's easier to store config files in json for sharing. When coming
 - Format Value
     - Will used pythons `str.format(*args)`
     - The original value must be a string, the replacement is index based.
-    - For example if ddescription is "{} Assemble{}" it back be formated to "Avengers Assemble!"
+    - For example if description is "{} Assemble{}" it back be formatted to "Avengers Assemble!"
 - Call Function
     - will call a custom function when processing each item.
-    - The signature of the funct is func(key: str, value: any, context: dict) -> any:
+    - The signature of the function is func(key: str, value: any, context: dict) -> any:
         - key - The current key (ie: CreateDate)
         - value - The current value for the given key
-        - conext - The current item being built
+        - context - The current item being built
         - return - the new value.
 
-In the case of nested dictionaries, key paths are supported which are "." seperated, key paths will also traverse sub lists. Currently it's not possible to specify an index, all items in the list will be updated. 
+In the case of nested dictionaries, key paths are supported which are "." separated, key paths will also traverse sub lists. Currently it's not possible to specify an index, all items in the list will be updated. 
 
-If the same overide is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data. 
+If the same override is needed for multiple keys then a list of key paths can be used. Currently overrides only work with json structured data. 
 
 The default behaviour for overrides is to ignore key path errors, however this behaviour can be altered by setting the `DATA_FORGE_SUPPRESS_KEY_PATH_ERRORS` environment variable. Supported values are `0`, `false`, `no` and `off`.
 
@@ -500,7 +501,7 @@ overrides = [
             "data.pk",
             "data.items.id",
         ],
-        "override_type": OverideType.CALL_FUNCTION,
+        "override_type": OverrideType.CALL_FUNCTION,
         "override": generate_id,
     },
     {
@@ -508,12 +509,12 @@ overrides = [
             "data.audit.create_date",
             "data.audit.last_update_date",
         ],
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": current_date,
     },
     {
         "key_paths": "data.description",
-        "override_type": OverideType.FORMAT_VALUE,
+        "override_type": OverrideType.FORMAT_VALUE,
         "override": [environment],
     }
 ]
@@ -553,19 +554,19 @@ By default, the same list of overrides is distributed to all destinations, if an
 overrides = [
     { # Will go to all destinations
         "key_paths": "data.text",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "Some Other Data",
     },
     { # Will go to some_config_1
         "forge_id": "some_config_1",
         "key_paths": "PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     },
     { # Will go to some_config_2
         "forge_id": "some_config_2",
         "key_paths": "PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_2",
     }
 ]
