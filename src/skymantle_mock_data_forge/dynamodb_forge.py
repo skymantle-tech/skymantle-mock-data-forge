@@ -38,13 +38,13 @@ class DynamoDbForge(BaseForge):
 
             self.keys.append(key)
 
-    def get_data(self, *, query: ForgeQuery, include_tags: bool):
+    def get_data(self, *, query: ForgeQuery, return_tags: bool):
         data = [copy.deepcopy(item) for item in self.items]
 
         if query is not None:
             data = self._get_data_query(query, data)
 
-        if not include_tags:
+        if not return_tags:
             data = [item["data"] for item in data]
 
         return data

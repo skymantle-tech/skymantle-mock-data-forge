@@ -286,7 +286,7 @@ def test_get_data():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=None, include_tags=True)
+    data = manager.get_data(query=None, return_tags=True)
 
     assert data == [{"key": "some_key", "data": {"text": "Some Data"}}]
 
@@ -315,7 +315,7 @@ def test_get_data_query_string_equals():
     query = {"StringEquals": {"type": "text"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}]
 
@@ -343,7 +343,7 @@ def test_get_data_query_string_equals_list():
     query = {"StringEquals": {"tests": "test_1"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
@@ -378,7 +378,7 @@ def test_get_data_query_string_like():
     query = {"StringLike": {"tests": "test"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
@@ -417,7 +417,7 @@ def test_get_data_query_compound():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
@@ -440,7 +440,7 @@ def test_get_data_query_no_matches():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == []
 
@@ -465,7 +465,7 @@ def test_get_data_query_no_matches_list():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == []
 
@@ -485,7 +485,7 @@ def test_get_data_query_invalid_operator():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query, include_tags=True)
+        manager.get_data(query=query, return_tags=True)
 
     assert "Only the following query operators are supported:" in str(e.value)
 
@@ -505,7 +505,7 @@ def test_get_data_empty_query():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query, include_tags=True)
+        manager.get_data(query=query, return_tags=True)
 
     assert str(e.value) == "Missing operator from query"
 
@@ -525,7 +525,7 @@ def test_get_data_query_invalid_condition():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query, include_tags=True)
+        manager.get_data(query=query, return_tags=True)
 
     assert str(e.value) == "The condition for an operator must be a dict."
 
@@ -559,7 +559,7 @@ def test_get_data_query_multiple_condition():
 
     manager = S3Forge("some-config", s3_config)
 
-    data = manager.get_data(query=query, include_tags=True)
+    data = manager.get_data(query=query, return_tags=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
@@ -595,7 +595,7 @@ def test_get_data_exclude_tags():
 
     manager = S3Forge("some-config", s3_config)
 
-    data = manager.get_data(query=query, include_tags=False)
+    data = manager.get_data(query=query, return_tags=False)
 
     assert data == [{"key": "some_key_1", "data": {"text": "Some Data"}}]
 
@@ -615,7 +615,7 @@ def test_get_data_query_invalid_tag_int():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query, include_tags=True)
+        manager.get_data(query=query, return_tags=True)
 
     assert str(e.value) == "Tag values can only be strings or list of strings."
 
@@ -635,7 +635,7 @@ def test_get_data_query_invalid_tag_list():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query, include_tags=True)
+        manager.get_data(query=query, return_tags=True)
 
     assert str(e.value) == "Tag values can only be strings or list of strings."
 
@@ -692,5 +692,5 @@ def test_override():
     response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
     assert response["Body"].read() == b'{"some_key": "some_other_value"}'
 
-    data = manager.get_data(query=None, include_tags=True)
+    data = manager.get_data(query=None, return_tags=True)
     assert data == [{"key": "some_key", "data": {"json": {"some_key": "some_other_value"}}}]
