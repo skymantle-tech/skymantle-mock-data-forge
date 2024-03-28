@@ -3,7 +3,6 @@ import copy
 import csv
 import io
 import json
-from functools import cache
 
 from boto3 import Session
 from skymantle_boto_buddy import s3
@@ -31,7 +30,6 @@ class S3Forge(BaseForge):
         self._s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self._keys: list[str] = [s3_object["key"] for s3_object in self._s3_objects]
 
-    @cache
     def _get_bucket_name(self):
         resource_config = self._config["bucket"]
         return self._get_destination_identifier(resource_config)

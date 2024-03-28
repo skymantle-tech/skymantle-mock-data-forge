@@ -1,5 +1,4 @@
 import copy
-from functools import cache
 
 from boto3 import Session
 from skymantle_boto_buddy import dynamodb
@@ -37,7 +36,6 @@ class DynamoDbForge(BaseForge):
 
             self._keys.append(key)
 
-    @cache
     def _get_table_name(self):
         resource_config = self._config["table"]
         return self._get_destination_identifier(resource_config)

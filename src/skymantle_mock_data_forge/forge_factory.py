@@ -75,7 +75,8 @@ class ForgeFactory:
     def get_data_first_item(
         self, forge_id: str | None = None, query: ForgeQuery = None, *, default: Any = None, return_tags: bool = True
     ) -> list[dict]:
-        """Gets the first item from the data loaded into forge destination. Does not return data created outside of the forge.
+        """Gets the first item from the data loaded into forge destination.
+        Does not return data created outside of the forge.
 
         Args:
             forge_id (str | None, optional): The forge to add the key too. Defaults to None.
