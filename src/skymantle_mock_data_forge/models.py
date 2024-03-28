@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 class ForgeQuery(TypedDict):
@@ -54,7 +54,7 @@ class DataForgeConfig(TypedDict):
     s3: S3ForgeConfig
 
 
-class OverideType(Enum):
+class OverrideType(Enum):
     REPLACE_VALUE = 0
     FORMAT_VALUE = 1
     CALL_FUNCTION = 2
@@ -63,5 +63,5 @@ class OverideType(Enum):
 class DataForgeConfigOverride(TypedDict):
     forge_id: str | None
     key_paths: str | list[str]
-    override_type: OverideType
-    override: any
+    override_type: OverrideType
+    override: Any
