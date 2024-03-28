@@ -22,22 +22,22 @@ class BaseForge:
     def __init__(
         self, forge_id: str, overrides: list[DataForgeConfigOverride] | None = None, session: Session = None
     ) -> None:
-        self.forge_id: str = forge_id
-        self.aws_session = session
-        self.config_overrides = overrides
+        self._forge_id: str = forge_id
+        self._aws_session = session
+        self._overrides = overrides
 
     def _get_destination_identifier(self, resource_config):
         if resource_config.get("name"):
             value = resource_config["name"]
 
         elif resource_config.get("ssm"):
-            value = ssm.get_parameter(resource_config["ssm"], session=self.aws_session)
+            value = ssm.get_parameter(resource_config["ssm"], session=self._aws_session)
 
         else:
             stack_name = resource_config["stack"]["name"]
             output = resource_config["stack"]["output"]
 
-            outputs = cloudformation.get_stack_outputs(stack_name, session=self.aws_session)
+            outputs = cloudformation.get_stack_outputs(stack_name, session=self._aws_session)
             output_value = outputs.get(output)
 
             if output_value:
@@ -92,18 +92,16 @@ class BaseForge:
     def _override_data(self, items: list[dict]) -> list[dict]:
         data: list[dict] = [copy.deepcopy(item) for item in items]
 
-        if not self.config_overrides:
+        if not self._overrides:
             return data
 
-        if not (
-            isinstance(self.config_overrides, list) and all(isinstance(item, dict) for item in self.config_overrides)
-        ):
+        if not (isinstance(self._overrides, list) and all(isinstance(item, dict) for item in self._overrides)):
             raise Exception("Overrides must be a list[DataForgeConfigOverride]")
 
         if not (isinstance(data, list) and all(isinstance(item, dict) for item in data)):
             raise Exception("The provided data must be a list of dictionaries")
 
-        for config_override in self.config_overrides:
+        for config_override in self._overrides:
             key_paths = config_override.get("key_paths")
 
             if isinstance(key_paths, str):
