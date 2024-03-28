@@ -107,8 +107,9 @@ def test_load_data_by_cfn_invalid_output():
         "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
+    forge = DynamoDbForge("some-config", data_loader_config)
     with pytest.raises(Exception) as e:
-        DynamoDbForge("some-config", data_loader_config)
+        forge.load_data()
 
     assert str(e.value) == "Unable to find a resource for stack: some_stack and output: db_name"
 

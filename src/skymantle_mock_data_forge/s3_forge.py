@@ -3,6 +3,7 @@ import copy
 import csv
 import io
 import json
+from functools import cache
 
 from boto3 import Session
 from skymantle_boto_buddy import s3
@@ -26,11 +27,14 @@ class S3Forge(BaseForge):
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
-        resource_config = config["bucket"]
-        self.bucket_name: str = self._get_destination_identifier(resource_config)
-
+        self.config = config
         self.s3_objects: list[S3ObjectConfig] = self._override_data(config["s3_objects"])
         self.keys: list[str] = [s3_object["key"] for s3_object in self.s3_objects]
+
+    @cache
+    def _get_bucket_name(self):
+        resource_config = self.config["bucket"]
+        return self._get_destination_identifier(resource_config)
 
     def get_data(self, *, query: ForgeQuery, return_tags: bool):
         data = [copy.deepcopy(s3_object) for s3_object in self.s3_objects]
@@ -76,7 +80,7 @@ class S3Forge(BaseForge):
             data_func = data_type_map[data_type]
             data = data_func(s3_object["data"][data_type])
 
-            s3.put_object(self.bucket_name, s3_object["key"], data, session=self.aws_session)
+            s3.put_object(self._get_bucket_name(), s3_object["key"], data, session=self.aws_session)
 
     def cleanup_data(self) -> None:
-        s3.delete_objects_simplified(self.bucket_name, self.keys, session=self.aws_session)
+        s3.delete_objects_simplified(self._get_bucket_name(), self.keys, session=self.aws_session)

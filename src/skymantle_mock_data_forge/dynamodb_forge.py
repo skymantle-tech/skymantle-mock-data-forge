@@ -1,4 +1,5 @@
 import copy
+from functools import cache
 
 from boto3 import Session
 from skymantle_boto_buddy import dynamodb
@@ -22,9 +23,7 @@ class DynamoDbForge(BaseForge):
     ) -> None:
         super().__init__(forge_id, overrides, session)
 
-        resource_config = config["table"]
-        self.table_name: str = self._get_destination_identifier(resource_config)
-
+        self.config = config
         self.primary_key_names: list[str] = config["primary_key_names"].copy()
         self.items: list[DynamoDbItemConfig] = self._override_data(config["items"])
 
@@ -37,6 +36,11 @@ class DynamoDbForge(BaseForge):
                 key[primary_key_name] = item["data"][primary_key_name]
 
             self.keys.append(key)
+
+    @cache
+    def _get_table_name(self):
+        resource_config = self.config["table"]
+        return self._get_destination_identifier(resource_config)
 
     def get_data(self, *, query: ForgeQuery, return_tags: bool):
         data = [copy.deepcopy(item) for item in self.items]
@@ -55,8 +59,8 @@ class DynamoDbForge(BaseForge):
 
     def load_data(self) -> None:
         for item in self.items:
-            dynamodb.put_item_simplified(self.table_name, item["data"], session=self.aws_session)
+            dynamodb.put_item_simplified(self._get_table_name(), item["data"], session=self.aws_session)
 
     def cleanup_data(self) -> None:
         for key in self.keys:
-            dynamodb.delete_item(self.table_name, key, session=self.aws_session)
+            dynamodb.delete_item(self._get_table_name(), key, session=self.aws_session)
