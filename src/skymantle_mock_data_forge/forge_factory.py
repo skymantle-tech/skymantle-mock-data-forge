@@ -73,7 +73,7 @@ class ForgeFactory:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
     def get_data_first_item(
-        self, forge_id: str | None = None, query: ForgeQuery = None, *, default: Any = None, return_tags: bool = True
+        self, forge_id: str | None = None, query: ForgeQuery = None, *, default: Any = None, return_tags: bool = False
     ) -> list[dict]:
         """Gets the first item from the data loaded into forge destination.
         Does not return data created outside of the forge.
@@ -95,7 +95,7 @@ class ForgeFactory:
         return next(iter(data), default)
 
     def get_data(
-        self, forge_id: str | None = None, query: ForgeQuery = None, *, return_tags: bool = True
+        self, forge_id: str | None = None, query: ForgeQuery = None, *, return_tags: bool = False
     ) -> list[dict]:
         """Gets a copy of the data loaded into forge destination. Does not return data created outside of the forge.
 
