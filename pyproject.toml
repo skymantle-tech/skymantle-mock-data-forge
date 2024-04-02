@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skymantle_mock_data_forge"
-version = "0.3.0"
+version = "0.4.0"
 dependencies=[
   "skymantle_boto_buddy[boto]"
 ]
