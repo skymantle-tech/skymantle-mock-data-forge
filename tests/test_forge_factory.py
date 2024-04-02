@@ -4,7 +4,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.forge_factory import ForgeFactory
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 
 @pytest.fixture()
@@ -59,21 +59,21 @@ def test_forge_init_overrides(mock_dynamodb_forge, mock_s3_forge):
 
     for_all = {
         "key_paths": "data.PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
 
     for_dynamodb = {
         "forge_id": "some_config_1",
         "key_paths": "data.PK",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "some_other_key_1",
     }
 
     for_s3 = {
         "forge_id": "some_config_2",
         "key_paths": "data.text",
-        "override_type": OverideType.REPLACE_VALUE,
+        "override_type": OverrideType.REPLACE_VALUE,
         "override": "Some Other Data",
     }
 
@@ -347,7 +347,7 @@ def test_add_key_invalid_id(mock_dynamodb_forge):
     assert str(e.value) == "invalid_config not initialized (some_config)."
 
 
-def test_get_key_data(mock_dynamodb_forge):
+def test_get_data(mock_dynamodb_forge):
     data_forge_config = [
         {
             "forge_id": "some_config",
@@ -358,18 +358,48 @@ def test_get_key_data(mock_dynamodb_forge):
             },
         }
     ]
-    mock_dynamodb_forge.return_value.get_data.return_value = [{"PK": "some_key_1", "Description": "Some description 1"}]
+    mock_dynamodb_forge.return_value.get_data.return_value = [
+        {"data": {"PK": "some_key_1", "Description": "Some description 1"}}
+    ]
 
     forge_factory = ForgeFactory(data_forge_config)
 
     data = forge_factory.get_data("some_config")
 
-    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(None)
+    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_source=False)
 
-    assert data == [{"PK": "some_key_1", "Description": "Some description 1"}]
+    assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
-def test_get_key_invalid_id(mock_dynamodb_forge):
+def test_get_data_first_item(mock_dynamodb_forge):
+    data_forge_config = [
+        {
+            "forge_id": "some_config",
+            "dynamodb": {
+                "table": {"name": "some_table"},
+                "primary_key_names": ["PK"],
+                "items": [
+                    {"data": {"PK": "some_key_1", "Description": "Some description 1"}},
+                    {"data": {"PK": "some_key_2", "Description": "Some description 2"}},
+                ],
+            },
+        }
+    ]
+    mock_dynamodb_forge.return_value.get_data.return_value = [
+        {"data": {"PK": "some_key_1", "Description": "Some description 1"}},
+        {"data": {"PK": "some_key_2", "Description": "Some description 2"}},
+    ]
+
+    forge_factory = ForgeFactory(data_forge_config)
+
+    data = forge_factory.get_data_first_item("some_config")
+
+    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_source=False)
+
+    assert data == {"data": {"PK": "some_key_1", "Description": "Some description 1"}}
+
+
+def test_get_data_invalid_id(mock_dynamodb_forge):
     data_forge_config = [
         {
             "forge_id": "some_config",

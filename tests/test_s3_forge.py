@@ -3,10 +3,10 @@ import os
 
 import boto3
 import pytest
-from moto import mock_cloudformation, mock_s3, mock_ssm
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 from skymantle_mock_data_forge.s3_forge import S3Forge
 
 
@@ -18,8 +18,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_s3
-@mock_ssm
+@mock_aws
 def test_load_data_by_ssm():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -39,8 +38,7 @@ def test_load_data_by_ssm():
     assert response["Body"].read() == b"Some Data"
 
 
-@mock_cloudformation
-@mock_s3
+@mock_aws
 def test_load_data_by_cfn():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -67,8 +65,7 @@ def test_load_data_by_cfn():
     assert response["Body"].read() == b"Some Data"
 
 
-@mock_cloudformation
-@mock_s3
+@mock_aws
 def test_load_data_by_cfn_invalid_output():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -88,13 +85,14 @@ def test_load_data_by_cfn_invalid_output():
         "s3_objects": [{"key": "some_key", "data": {"text": "Some Data"}}],
     }
 
+    forge = S3Forge("some-config", s3_config)
     with pytest.raises(Exception) as e:
-        S3Forge("some-config", s3_config)
+        forge.load_data()
 
     assert str(e.value) == "Unable to find a resource for stack: some_stack and output: bucket_name"
 
 
-@mock_s3
+@mock_aws
 def test_load_text_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -118,7 +116,7 @@ def test_load_text_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_json_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -142,7 +140,7 @@ def test_load_json_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_base64_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -166,7 +164,7 @@ def test_load_base64_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_csv_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -202,7 +200,7 @@ def test_load_csv_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_file_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -212,7 +210,7 @@ def test_load_file_and_cleanup_data():
         "s3_objects": [
             {
                 "key": "some_key",
-                "data": {"file": "tests/data/amazon_webservices_logo.png"},
+                "data": {"file": "tests/data/amazon_web_services_logo.png"},
             }
         ],
     }
@@ -220,7 +218,7 @@ def test_load_file_and_cleanup_data():
     manager = S3Forge("some-config", s3_config)
     manager.load_data()
 
-    with open("tests/data/amazon_webservices_logo.png", "rb") as file:
+    with open("tests/data/amazon_web_services_logo.png", "rb") as file:
         data = file.read()
 
     response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
@@ -234,7 +232,7 @@ def test_load_file_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_data_invalid_type():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -252,7 +250,7 @@ def test_load_data_invalid_type():
     assert "Can only have one of the following per s3 config:" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_load_data_to_many_types():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -278,7 +276,7 @@ def test_load_data_to_many_types():
     assert "Can only have one of the following per s3 config:" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_get_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -289,12 +287,12 @@ def test_get_data():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data()
+    data = manager.get_data(query=None, return_source=True)
 
     assert data == [{"key": "some_key", "data": {"text": "Some Data"}}]
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_string_equals():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -318,12 +316,12 @@ def test_get_data_query_string_equals():
     query = {"StringEquals": {"type": "text"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [{"key": "some_key_1", "tags": {"type": "text"}, "data": {"text": "Some Data"}}]
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_string_equals_list():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -346,14 +344,14 @@ def test_get_data_query_string_equals_list():
     query = {"StringEquals": {"tests": "test_1"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
     ]
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_string_like():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -381,7 +379,7 @@ def test_get_data_query_string_like():
     query = {"StringLike": {"tests": "test"}}
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}},
@@ -389,7 +387,7 @@ def test_get_data_query_string_like():
     ]
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_compound():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -420,14 +418,14 @@ def test_get_data_query_compound():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
     ]
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_no_matches():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -443,12 +441,12 @@ def test_get_data_query_no_matches():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == []
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_no_matches_list():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -468,12 +466,12 @@ def test_get_data_query_no_matches_list():
     }
 
     manager = S3Forge("some-config", s3_config)
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == []
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_invalid_operator():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -488,13 +486,13 @@ def test_get_data_query_invalid_operator():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+        manager.get_data(query=query, return_source=True)
 
     assert "Only the following query operators are supported:" in str(e.value)
 
 
-@mock_s3
-def test_get_data__empty_query():
+@mock_aws
+def test_get_data_empty_query():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
 
@@ -508,12 +506,12 @@ def test_get_data__empty_query():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+        manager.get_data(query=query, return_source=True)
 
     assert str(e.value) == "Missing operator from query"
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_invalid_condition():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -528,12 +526,12 @@ def test_get_data_query_invalid_condition():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+        manager.get_data(query=query, return_source=True)
 
     assert str(e.value) == "The condition for an operator must be a dict."
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_multiple_condition():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -562,14 +560,48 @@ def test_get_data_query_multiple_condition():
 
     manager = S3Forge("some-config", s3_config)
 
-    data = manager.get_data(query=query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"key": "some_key_1", "tags": {"type": "text", "tests": ["test_1", "test_2"]}, "data": {"text": "Some Data"}}
     ]
 
 
-@mock_s3
+@mock_aws
+def test_get_data_exclude_tags():
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    s3_config = {
+        "bucket": {"name": "some_bucket"},
+        "s3_objects": [
+            {
+                "key": "some_key_1",
+                "tags": {"type": "text", "tests": ["test_1", "test_2"]},
+                "data": {"text": "Some Data"},
+            },
+            {
+                "key": "some_key_2",
+                "tags": {"type": "json", "tests": "test_3"},
+                "data": {"json": {"key": "value"}},
+            },
+            {
+                "key": "some_key_3",
+                "tags": {"type": "text"},
+                "data": {"text": "Some Data"},
+            },
+        ],
+    }
+    query = {"StringEquals": {"type": "text", "tests": "test_1"}}
+
+    manager = S3Forge("some-config", s3_config)
+
+    data = manager.get_data(query=query, return_source=False)
+
+    assert data == [{"key": "some_key_1", "data": {"text": "Some Data"}}]
+
+
+@mock_aws
 def test_get_data_query_invalid_tag_int():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -584,12 +616,12 @@ def test_get_data_query_invalid_tag_int():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+        manager.get_data(query=query, return_source=True)
 
     assert str(e.value) == "Tag values can only be strings or list of strings."
 
 
-@mock_s3
+@mock_aws
 def test_get_data_query_invalid_tag_list():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -604,12 +636,12 @@ def test_get_data_query_invalid_tag_list():
     manager = S3Forge("some-config", s3_config)
 
     with pytest.raises(Exception) as e:
-        manager.get_data(query=query)
+        manager.get_data(query=query, return_source=True)
 
     assert str(e.value) == "Tag values can only be strings or list of strings."
 
 
-@mock_s3
+@mock_aws
 def test_add_key_and_cleanup_data():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -632,7 +664,7 @@ def test_add_key_and_cleanup_data():
     assert "An error occurred (NoSuchKey) when calling the GetObject operation" in str(e.value)
 
 
-@mock_s3
+@mock_aws
 def test_override():
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
@@ -650,7 +682,7 @@ def test_override():
     overrides = [
         {
             "key_paths": "data.json.some_key",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": "some_other_value",
         },
     ]
@@ -661,5 +693,5 @@ def test_override():
     response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
     assert response["Body"].read() == b'{"some_key": "some_other_value"}'
 
-    data = manager.get_data()
+    data = manager.get_data(query=None, return_source=True)
     assert data == [{"key": "some_key", "data": {"json": {"some_key": "some_other_value"}}}]

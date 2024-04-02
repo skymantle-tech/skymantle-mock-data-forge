@@ -4,11 +4,11 @@ import uuid
 
 import boto3
 import pytest
-from moto import mock_cloudformation, mock_dynamodb, mock_ssm
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_mock_data_forge.dynamodb_forge import DynamoDbForge
-from skymantle_mock_data_forge.models import OverideType
+from skymantle_mock_data_forge.models import OverrideType
 
 
 @pytest.fixture(autouse=True)
@@ -19,8 +19,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_ssm
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_ssm():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -47,8 +46,7 @@ def test_load_data_by_ssm():
     assert response["Item"] == {"PK": {"S": "some_key_1"}, "Description": {"S": "Some description 1"}}
 
 
-@mock_cloudformation
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_cfn():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -82,8 +80,7 @@ def test_load_data_by_cfn():
     assert response["Item"] == {"PK": {"S": "some_key_1"}, "Description": {"S": "Some description 1"}}
 
 
-@mock_cloudformation
-@mock_dynamodb
+@mock_aws
 def test_load_data_by_cfn_invalid_output():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -110,13 +107,14 @@ def test_load_data_by_cfn_invalid_output():
         "items": [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}],
     }
 
+    forge = DynamoDbForge("some-config", data_loader_config)
     with pytest.raises(Exception) as e:
-        DynamoDbForge("some-config", data_loader_config)
+        forge.load_data()
 
     assert str(e.value) == "Unable to find a resource for stack: some_stack and output: db_name"
 
 
-@mock_dynamodb
+@mock_aws
 def test_load_and_cleanup_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -145,7 +143,7 @@ def test_load_and_cleanup_data():
     assert response.get("Item") is None
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -163,12 +161,12 @@ def test_get_data():
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data()
+    data = manager.get_data(query=None, return_source=True)
 
     assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data_query_string_equals():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -191,12 +189,12 @@ def test_get_data_query_string_equals():
     query = {"StringEquals": {"tests": "test_1"}}
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [{"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
 
-@mock_dynamodb
+@mock_aws
 def test_get_data_query_string_like():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -220,7 +218,7 @@ def test_get_data_query_string_like():
     query = {"StringLike": {"tests": "test"}}
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
@@ -228,7 +226,39 @@ def test_get_data_query_string_like():
     ]
 
 
-@mock_dynamodb
+@mock_aws
+def test_get_data_exclude_tags():
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+    )
+
+    data_loader_config = {
+        "table": {"name": "some_table"},
+        "primary_key_names": ["PK"],
+        "items": [
+            {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
+            {"tags": {"tests": "test_2"}, "data": {"PK": "some_key_2", "Description": "Some description 2"}},
+            {"data": {"PK": "some_key_3", "Description": "Some description 3"}},
+        ],
+    }
+
+    query = {"StringLike": {"tests": "test"}}
+
+    manager = DynamoDbForge("some-config", data_loader_config)
+    data = manager.get_data(query=query, return_source=False)
+
+    assert data == [
+        {"PK": "some_key_1", "Description": "Some description 1"},
+        {"PK": "some_key_2", "Description": "Some description 2"},
+    ]
+
+
+@mock_aws
 def test_add_key_and_cleanup_data():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -258,7 +288,7 @@ def test_add_key_and_cleanup_data():
     assert response.get("Item") is None
 
 
-@mock_dynamodb
+@mock_aws
 def test_override():
     dynamodb_client = boto3.client("dynamodb")
 
@@ -279,7 +309,7 @@ def test_override():
     overrides = [
         {
             "key_paths": "data.PK",
-            "override_type": OverideType.REPLACE_VALUE,
+            "override_type": OverrideType.REPLACE_VALUE,
             "override": pk,
         },
     ]
@@ -290,5 +320,5 @@ def test_override():
     response = dynamodb_client.get_item(TableName="some_table", Key={"PK": {"S": pk}})
     assert response["Item"] == {"PK": {"S": pk}, "Description": {"S": "Some description 1"}}
 
-    data = manager.get_data()
+    data = manager.get_data(query=None, return_source=True)
     assert data == [{"data": {"PK": pk, "Description": "Some description 1"}}]

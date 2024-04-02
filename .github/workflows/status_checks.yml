@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Setup
-        run: make setup
+        run: make install
       - name: Lint and Analysis
-        run: make lintAndAnalysis
+        run: make lint_and_analysis
       - name: Unit Tests
-        run: make unitTests
+        run: make unit_tests
