@@ -34,13 +34,13 @@ class S3Forge(BaseForge):
         resource_config = self._config["bucket"]
         return self._get_destination_identifier(resource_config)
 
-    def get_data(self, *, query: ForgeQuery, return_tags: bool):
+    def get_data(self, *, query: ForgeQuery, return_source: bool):
         data = [copy.deepcopy(s3_object) for s3_object in self._s3_objects]
 
         if query is not None:
             data = self._get_data_query(query, data)
 
-        if not return_tags:
+        if not return_source:
             data = [{"key": item["key"], "data": item["data"]} for item in data]
 
         return data

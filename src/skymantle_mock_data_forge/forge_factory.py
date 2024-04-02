@@ -73,7 +73,7 @@ class ForgeFactory:
             raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 
     def get_data_first_item(
-        self, forge_id: str | None = None, query: ForgeQuery = None, *, default: Any = None, return_tags: bool = False
+        self, forge_id: str | None = None, query: ForgeQuery = None, *, default: Any = None, return_source: bool = False
     ) -> list[dict]:
         """Gets the first item from the data loaded into forge destination.
         Does not return data created outside of the forge.
@@ -82,7 +82,7 @@ class ForgeFactory:
             forge_id (str | None, optional): The forge to add the key too. Defaults to None.
             query (ForgeQuery, optional): Query forge data tags to limit returned data. Defaults to None.
             default (Any, optional): Default value if no items returned. Defaults to None.
-            return_tags (bool, optional): Include tags as part of the response. Defaults to True.
+            return_source (bool, optional): Include all data from the config file. Defaults to False.
 
         Raises:
             Exception: Provided forge ID is not valid.
@@ -90,19 +90,19 @@ class ForgeFactory:
         Returns:
             dict: The first or default item
         """
-        data = self.get_data(forge_id, query, return_tags=return_tags)
+        data = self.get_data(forge_id, query, return_source=return_source)
 
         return next(iter(data), default)
 
     def get_data(
-        self, forge_id: str | None = None, query: ForgeQuery = None, *, return_tags: bool = False
+        self, forge_id: str | None = None, query: ForgeQuery = None, *, return_source: bool = False
     ) -> list[dict]:
         """Gets a copy of the data loaded into forge destination. Does not return data created outside of the forge.
 
         Args:
             forge_id (str | None, optional): When provided will only get data for the specific forge. Defaults to None.
             query (ForgeQuery, optional): Query forge data tags to limit returned data. Defaults to None.
-            return_tags (bool, optional): Include tags as part of the response. Defaults to True.
+            return_source (bool, optional): Include all data from the config file. Defaults to False.
 
         Raises:
             Exception: Provided forge ID is not valid.
@@ -117,7 +117,7 @@ class ForgeFactory:
             data_manager = self.data_managers.get(forge_id)
 
             if data_manager:
-                data.extend(data_manager.get_data(query=query, return_tags=return_tags))
+                data.extend(data_manager.get_data(query=query, return_source=return_source))
             else:
                 raise Exception(f"{forge_id} not initialized ({','.join(self.data_managers.keys())}).")
 

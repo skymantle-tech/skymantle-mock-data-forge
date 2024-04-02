@@ -40,13 +40,13 @@ class DynamoDbForge(BaseForge):
         resource_config = self._config["table"]
         return self._get_destination_identifier(resource_config)
 
-    def get_data(self, *, query: ForgeQuery, return_tags: bool):
+    def get_data(self, *, query: ForgeQuery, return_source: bool):
         data = [copy.deepcopy(item) for item in self._items]
 
         if query is not None:
             data = self._get_data_query(query, data)
 
-        if not return_tags:
+        if not return_source:
             data = [item["data"] for item in data]
 
         return data

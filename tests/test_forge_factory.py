@@ -366,7 +366,7 @@ def test_get_data(mock_dynamodb_forge):
 
     data = forge_factory.get_data("some_config")
 
-    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_tags=False)
+    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_source=False)
 
     assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
@@ -394,7 +394,7 @@ def test_get_data_first_item(mock_dynamodb_forge):
 
     data = forge_factory.get_data_first_item("some_config")
 
-    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_tags=False)
+    mock_dynamodb_forge.return_value.get_data.assert_called_once_with(query=None, return_source=False)
 
     assert data == {"data": {"PK": "some_key_1", "Description": "Some description 1"}}
 

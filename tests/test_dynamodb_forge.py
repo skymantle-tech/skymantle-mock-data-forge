@@ -161,7 +161,7 @@ def test_get_data():
     }
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query=None, return_tags=True)
+    data = manager.get_data(query=None, return_source=True)
 
     assert data == [{"data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
@@ -189,7 +189,7 @@ def test_get_data_query_string_equals():
     query = {"StringEquals": {"tests": "test_1"}}
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query=query, return_tags=True)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [{"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}}]
 
@@ -218,7 +218,7 @@ def test_get_data_query_string_like():
     query = {"StringLike": {"tests": "test"}}
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query=query, return_tags=True)
+    data = manager.get_data(query=query, return_source=True)
 
     assert data == [
         {"tags": {"tests": "test_1"}, "data": {"PK": "some_key_1", "Description": "Some description 1"}},
@@ -250,7 +250,7 @@ def test_get_data_exclude_tags():
     query = {"StringLike": {"tests": "test"}}
 
     manager = DynamoDbForge("some-config", data_loader_config)
-    data = manager.get_data(query=query, return_tags=False)
+    data = manager.get_data(query=query, return_source=False)
 
     assert data == [
         {"PK": "some_key_1", "Description": "Some description 1"},
@@ -320,5 +320,5 @@ def test_override():
     response = dynamodb_client.get_item(TableName="some_table", Key={"PK": {"S": pk}})
     assert response["Item"] == {"PK": {"S": pk}, "Description": {"S": "Some description 1"}}
 
-    data = manager.get_data(query=None, return_tags=True)
+    data = manager.get_data(query=None, return_source=True)
     assert data == [{"data": {"PK": pk, "Description": "Some description 1"}}]
